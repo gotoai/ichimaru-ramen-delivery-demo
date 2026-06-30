@@ -1,14 +1,14 @@
-## Locations
+## Stores
 
-### The number of stores in each prefecture is indicated in `ichimaru-ramen-delivery-demo/docs/profiles/Locations.md`.
+The number of stores in each prefecture is indicated in `ichimaru-ramen-delivery-demo/docs/profiles/Locations.md`.
 
-### Randomly smaple the store locations in each prefecture with the indicated number of stores. The sampling algorithm is given as following. Pass the arguments as:
+Randomly sample the store locations in each prefecture with the indicated number of stores. The sampling algorithm is given as follows. Pass the arguments as:
   - prefecture = each prefecture indicated by above `Locations.md`
   - prefix = ''
   - suffix = '店'
-  - n = the number of storse in the prefecture indicated by above `Locations.md`
-  - magnitude1_range = (80, 300). This is the weekday ramen salse baseline
-  - magnitude2_range = (50, 350). This is the weekend ramen salse baseline
+  - n = the number of stores in the prefecture indicated by above `Locations.md`
+  - magnitude1_range = (80, 300). This is the weekday ramen sales baseline (matching `synthetics/stores/weekday_sales_baseline` in `config/config.yaml`)
+  - magnitude2_range = (50, 350). This is the weekend ramen sales baseline (matching `synthetics/stores/weekend_sales_baseline` in `config/config.yaml`)
 
 #### Location sampling algorithm
   - Input data
@@ -28,13 +28,13 @@
 
   - Processing steps:
     - Load the population of each ooaza (that has the `地域階層レベル` field of '3')
-    - Select a big number N, e.g., 10000000, and normalize the population numbers of each ooaza to a weight so that their sum equals to N
-    - List the population weights in a sequence, so that they constitute of a partition of N
-    - Build a 3-column of data frame sorted by the weights in descending order:
+    - Select a big number N, e.g., 10000000, and normalize the population numbers of each ooaza to a weight so that their sum equals N
+    - List the population weights in a sequence, so that they constitute a partition of N
+    - Build a 3-column data frame sorted by the weights in descending order:
       - ooaza_name, weight, cumulative weight
-    - Uniformly sampe a number u in range [0, n), and mapping this number to the ooaza name by locating u within the maximum bound of accumaltive value
+    - Uniformly sample a number u in range [0, N), and map it to an ooaza by locating u within the cumulative-weight bounds
     - If the ooaza has already been sampled, then redo the sampling till it doesn't duplicate
-    - Locate the ploygon of ooaza from the geo-shape file, select the centroid coordinates of the ooaza as the latitude and longitude of the store
+    - Locate the polygon of ooaza from the geo-shape file, select the centroid coordinates of the ooaza as the latitude and longitude of the store
     - Generate the name as <prefix><prefecture><city/ward/town/village><ooaza><suffix>
     - Uniformly sampling the magnitude(s)
 

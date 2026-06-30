@@ -1,7 +1,7 @@
 
 ## Stores and factory locations
 
-Ichimaru operates with its 80 stores in 4 prefectures:
+Ichimaru operates 80 stores across 4 prefectures:
   - Tokyo: 30 stores
   - Kanagawa: 20 stores
   - Chiba: 15 stores
