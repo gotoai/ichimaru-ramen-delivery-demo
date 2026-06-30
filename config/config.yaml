@@ -64,3 +64,94 @@ synthetics:
       神奈川県: 500
 
     people_range: [200, 1000]
+
+  sales:
+    baseline:
+      scale_sampling:
+        kernel: beta
+        normalize: yes
+        parameters:
+          alpha: 30
+          beta: 10
+
+      noise_sampling:
+        kernel: gaussian
+        parameters:
+          mu: 1.0
+          sigma: 0.05
+          bounds: [0.5, 1.5]
+
+    home_building:
+      scale_sampling:
+        kernel: beta
+        normalize: yes
+        parameters:
+          alpha: 5
+          beta: 5    
+      
+      noise_sampling:
+        kernel: gaussian
+        parameters:
+          mu: 1.0
+          sigma: 0.05
+          bounds: [0.5, 1.5]
+
+    competitor:
+      scale_sampling:
+        kernel: beta
+        normalize: yes
+        parameters:
+          alpha: 30
+          beta: 10
+
+      noise_sampling:
+        kernel: gaussian
+        parameters:
+          mu: 1.0
+          sigma: 0.05
+          bounds: [0.5, 1.5]
+
+    event:
+      scale_sampling:
+        kernel: beta
+        normalize: yes
+        parameters:
+          alpha: 20
+          beta: 20    
+      
+      noise_sampling:
+        kernel: gaussian
+        parameters:
+          mu: 1.0
+          sigma: 0.05
+          bounds: [0.5, 1.5]
+
+    weather_temperature:
+      scale_sampling:
+        kernel: beta
+        normalize: yes
+        parameters:
+          alpha: 30
+          beta: 30    
+      
+      noise_sampling:
+        kernel: gaussian
+        parameters:
+          mu: 1.0
+          sigma: 0.05
+          bounds: [0.5, 1.5]
+
+    weather_rain:
+      scale_sampling:
+        kernel: beta
+        normalize: yes
+        parameters:
+          alpha: 50
+          beta: 50    
+      
+      noise_sampling:
+        kernel: gaussian
+        parameters:
+          mu: 1.0
+          sigma: 0.05
+          bounds: [0.5, 1.5]    

@@ -41,6 +41,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+JST = datetime.timezone(datetime.timedelta(hours=9))  # config time_horizon is in JST
+
 # --- JMA obsdl endpoints -------------------------------------------------------
 ROOT = "https://www.data.jma.go.jp/risk/obsdl"
 INDEX_URL = ROOT + "/index.php"
@@ -87,9 +89,9 @@ def default_period():
             calendar years).
 
     e.g. run on 2026-06-15 -> 2023-01 .. 2026-06, the final month covering only
-    days 1..13.
+    days 1..13. "Today" is evaluated in JST, matching config/config.yaml.
     """
-    end_date = datetime.date.today() - datetime.timedelta(days=2)
+    end_date = datetime.datetime.now(JST).date() - datetime.timedelta(days=2)
     start_year = end_date.year - 3
     return (start_year, 1), (end_date.year, end_date.month), end_date.day
 

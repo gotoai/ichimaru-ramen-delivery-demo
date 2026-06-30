@@ -18,8 +18,10 @@ base-data: ## Download population, boundary shapefiles, weather stations, and we
 	# JMA daily weather history, last 3 full calendar years — long step, ~4-6 min
 	$(PYTHON) ai/skills/retrieve-weather-history/scripts/retrieve_weather.py
 
-synthetics: ## Synthesize primary data (stores, competitors, home buildings, events) from base data (setup step 2)
+synthetics: ## Synthesize primary data (stores, competitors, home buildings, events, sales) from base data (setup step 2)
+	# Requires the `base-data` outputs in DATA/s02_intermediate/ — run `make base-data` first.
 	$(PYTHON) -m pip install -q -r requirements.txt
 	$(PYTHON) ai/skills/synthesize-stores/scripts/synthesize_stores.py
 	$(PYTHON) ai/skills/synthesize-pois/scripts/synthesize_pois.py
 	$(PYTHON) ai/skills/synthesize-events/scripts/synthesize_events.py
+	$(PYTHON) ai/skills/synthesize-sales/scripts/synthesize_sales.py
