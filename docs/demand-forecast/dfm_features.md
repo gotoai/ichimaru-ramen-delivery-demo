@@ -153,7 +153,10 @@ All weather variables are numeric:
 
   - `week+1_high_temperature` — the `最高気温(℃)` column value for the proxy date.
   - `week+1_avg_temperature` — the `平均気温(℃)` column value for the proxy date.
-  - `week+1_rainfall` — the `降水量の合計(mm)` column value for the proxy date.
+  - `week+1_rainfall` — nominally the `降水量の合計(mm)` column, but **always set
+    to 0** (the no-rain default). The one-year-lag proxy carries essentially no
+    usable rainfall signal, so rainfall falls back to "no rain" rather than being
+    proxied like the temperature columns.
 
 #### Calendar variables
 
@@ -198,8 +201,17 @@ The data set time range is expressed as a range of reference dates:
     post-test reference dates leak into training.)
 
   - **Prediction data set**
-    The single last valid reference date. The target variable is unavailable for
-    week+1 and is therefore left as a missing value.
+    Defined relative to the current system date in JST:
+    - If the current date is **on or after Thursday** (Thursday–Sunday), this
+      week's Thursday is already a valid reference date, so the data set contains
+      the **last two valid reference dates**: this week's Thursday and the
+      previous week's Thursday.
+    - If the current date is **before Thursday** (Monday–Wednesday), this week's
+      Thursday has not yet occurred, so the data set contains only the **single
+      last valid reference date**: the previous week's Thursday.
+
+    The target variable (`actual_sales`) is unavailable for week+1 and is
+    therefore left as a missing value.
 
 ### Output
 

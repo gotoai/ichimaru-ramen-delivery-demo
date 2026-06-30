@@ -26,7 +26,9 @@ a Thursday and `target_date` ranges over the 7 days of week+1.
 - `training_dataset.tsv` — reference Thursdays from the first valid one up to
   immediately before the test window.
 - `test_dataset.tsv` — the 8 reference Thursdays ending two weeks before today.
-- `predict_dataset.tsv` — the single last valid reference Thursday;
+- `predict_dataset.tsv` — the last valid reference Thursday(s): the last two
+  (this week's and the previous week's) when today is on or after Thursday, or
+  just the previous week's when today is before Thursday;
   `actual_sales` is blank (the week+1 target is unknown at prediction time).
 
 Columns (in order): the 3 key columns, 22 regression variables, 3 weather
@@ -66,15 +68,17 @@ the splits — useful for testing/reproducibility), `--limit-stores N` (testing)
   `delta-week-1to4_*` = week-1 mean minus week-4 mean (`w-1_sub_w-4`); and
   `week-1to4_weekday[1-7]_avg_sales` (mean per ISO weekday across weeks 1–4).
   Empty inputs yield a blank cell.
-- **Weather** (future zone, per target date). Real forecasts are treated as
-  unavailable, so each value is a **previous-year proxy**: the same month/day of
-  `target_date` one year earlier (the day before for a non-existent Feb 29),
-  filled forward from up to 2 prior days, else blank. This proxy is applied
-  **identically in training and prediction** — do not substitute the actual
-  week+1 weather (serve-time leakage). The station is the nearest active station
-  to the store by haversine distance (coords from `weather-station.tsv`, matched
-  to `weather_history_*.tsv` by station name `観測地点`), mirroring
-  `synthesize-sales`.
+- **Weather** (future zone, per target date). For the two temperature columns
+  (`week+1_high_temperature`, `week+1_avg_temperature`) each value is a
+  **previous-year proxy**: the same month/day of `target_date` one year earlier
+  (the day before for a non-existent Feb 29), filled forward from up to 2 prior
+  days, else blank. This proxy is applied **identically in training and
+  prediction** — do not substitute the actual week+1 weather (serve-time leakage).
+  The station is the nearest active station to the store by haversine distance
+  (coords from `weather-station.tsv`, matched to `weather_history_*.tsv` by
+  station name `観測地点`), mirroring `synthesize-sales`. `week+1_rainfall` carries
+  no real signal under the one-year lag, so it is **always 0** (the no-rain
+  default) rather than proxied.
 - **Calendar** (future zone, per target date): `month_number`, `is_weekend`
   (ISO weekday ∈ {6,7}), `weekday_number` (Mon=1…Sun=7), and the cyclical
   `target_offdays_{cos,sin} = {cos,sin}(2π·D/366)` where `D` is days since Jan 1

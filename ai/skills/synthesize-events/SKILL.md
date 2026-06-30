@@ -29,7 +29,7 @@ the centroid).
 
 | column | meaning |
 | --- | --- |
-| `prefecture` | English prefecture name (e.g. `Tokyo`) |
+| `prefecture` | prefecture name in Japanese/Kanji (e.g. `東京都`) |
 | `event_name` | `イベント_<都道府県名><市区町村名><大字・町名>_<seq>` |
 | `latitude` / `longitude` | uniform random point inside the ooaza polygon (6 dp) |
 | `people` | integer, uniform sample in `synthetics/events/people_range` |

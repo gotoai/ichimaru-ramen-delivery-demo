@@ -53,6 +53,8 @@ BOOST_MONTHS = frozenset({4, 8, 10})  # April, August, October
 BOOST_WEIGHT = 5                      # 5x the weight of an ordinary day
 
 # --- Japanese prefecture name -> (English display name, 2-digit JIS code) -------
+# The output `prefecture` column uses the Japanese (Kanji) name; the English name
+# is retained only for reference.
 JA_TO_EN_CODE = {
     "北海道": ("Hokkaido", "01"), "青森県": ("Aomori", "02"), "岩手県": ("Iwate", "03"),
     "宮城県": ("Miyagi", "04"), "秋田県": ("Akita", "05"), "山形県": ("Yamagata", "06"),
@@ -291,7 +293,7 @@ def main() -> int:
     rows: list[dict] = []
     seq = 0
     for ja, n in numbers.items():
-        en, code = JA_TO_EN_CODE[ja]
+        _, code = JA_TO_EN_CODE[ja]
         pool, cumulative, upper = pools[code]
         for _ in range(int(n)):
             seq += 1
@@ -300,7 +302,7 @@ def main() -> int:
             people = round(rng.uniform(*people_range))
             event_date = sample_date(dates, date_cum, date_total, rng)
             name = f"イベント_{ja}{o['muni']}{o['name']}_{seq:0{width}d}"
-            rows.append({"prefecture": en, "name": name, "lat": lat, "lon": lon,
+            rows.append({"prefecture": ja, "name": name, "lat": lat, "lon": lon,
                          "people": people, "event_date": event_date.isoformat()})
 
     out_path = out_dir / "event.tsv"

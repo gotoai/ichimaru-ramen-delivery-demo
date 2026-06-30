@@ -44,7 +44,8 @@ DEFAULT_MAG2_RANGE = (50.0, 350.0)   # weekend ramen sales baseline
 
 # --- English prefecture name -> (Japanese name, 2-digit JIS code) --------------
 # Locations.md uses English names; the population TSV and geoshape dirs use the
-# Japanese name and the 2-digit code respectively.
+# Japanese name and the 2-digit code respectively. The output `prefecture` column
+# uses the Japanese (Kanji) name.
 EN_TO_JA_CODE = {
     "hokkaido": ("北海道", "01"), "aomori": ("青森県", "02"), "iwate": ("岩手県", "03"),
     "miyagi": ("宮城県", "04"), "akita": ("秋田県", "05"), "yamagata": ("山形県", "06"),
@@ -258,7 +259,7 @@ def main() -> int:
             ooaza, ja, centroids, n, DEFAULT_PREFIX, DEFAULT_SUFFIX,
             DEFAULT_MAG1_RANGE, DEFAULT_MAG2_RANGE, rng)
         for name, lat, lon, mag1, mag2 in stores:
-            rows.append((en, name, lat, lon, mag1, mag2))
+            rows.append((ja, name, lat, lon, mag1, mag2))
         print(f"  [OK] {en} ({ja}, {code}): {len(stores)} stores "
               f"from {sum(1 for o in ooaza if o['pop'] > 0 and o['key'] in centroids)} eligible ooaza")
 
@@ -267,8 +268,8 @@ def main() -> int:
         w = csv.writer(f, delimiter="\t")
         w.writerow(["prefecture", "store_name", "latitude", "longitude",
                     "weekday_sale_baseline", "weekend_sale_baseline"])
-        for en, name, lat, lon, mag1, mag2 in rows:
-            w.writerow([en, name, f"{lat:.6f}", f"{lon:.6f}",
+        for pref, name, lat, lon, mag1, mag2 in rows:
+            w.writerow([pref, name, f"{lat:.6f}", f"{lon:.6f}",
                         f"{mag1:.1f}", "" if mag2 is None else f"{mag2:.1f}"])
 
     print(f"Wrote {len(rows)} stores -> {out_path.relative_to(repo_root)}")

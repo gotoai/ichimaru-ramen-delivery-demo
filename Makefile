@@ -5,7 +5,7 @@
 PYTHON := $(shell [ -x .venv/bin/python ] && echo .venv/bin/python || echo python3)
 
 .DEFAULT_GOAL := help
-.PHONY: help base-data synthetics features
+.PHONY: help base-data synthetics features modeling prediction
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -26,6 +26,12 @@ synthetics: ## Synthesize primary data (stores, competitors, home buildings, eve
 	$(PYTHON) ai/skills/synthesize-events/scripts/synthesize_events.py
 	$(PYTHON) ai/skills/synthesize-sales/scripts/synthesize_sales.py
 
-features: ## Build demand-forecast model features (training/test/prediction) from primary data (setup step 3)
+modeling: ## Build DFM features then train/tune/evaluate the demand-forecast model (setup step 3)
 	# Requires the `synthetics` outputs in DATA/s03_primary/ — run `make synthetics` first.
+	$(PYTHON) -m pip install -q -r requirements.txt
 	$(PYTHON) ai/skills/dfm-create-features/scripts/create_features.py
+	$(PYTHON) ai/skills/dfm-build-model/scripts/build_model.py
+
+prediction: ## Score the trained model on the prediction set -> DATA/s06_prediction/ (setup step 4)
+	# Requires the `modeling` outputs in DATA/s05_model/ — run `make modeling` first.
+	$(PYTHON) ai/skills/dfm-predict-sales/scripts/predict_sales.py

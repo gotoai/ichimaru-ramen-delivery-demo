@@ -59,8 +59,9 @@ CUTOFF_DAYS_BEFORE_TODAY = 2    # "2 days before current system date in JST"
 ENDLESS = "9999-99-99"          # never-closing sentinel
 
 # --- Japanese prefecture name -> (English display name, 2-digit JIS code) -------
-# config keys the prefectures by Japanese name; the geoshape dirs use the code and
-# store.tsv uses the English display name, so we keep both.
+# config keys the prefectures by Japanese name and the geoshape dirs use the code.
+# The output `prefecture` column uses the Japanese (Kanji) name; the English name
+# is retained only for reference.
 JA_TO_EN_CODE = {
     "北海道": ("Hokkaido", "01"), "青森県": ("Aomori", "02"), "岩手県": ("Iwate", "03"),
     "宮城県": ("Miyagi", "04"), "秋田県": ("Akita", "05"), "山形県": ("Yamagata", "06"),
@@ -269,7 +270,7 @@ def synthesize(numbers: dict, pools: dict, prefix: str, suffix: str,
     rows: list[dict] = []
     seq = 0
     for ja, n in numbers.items():
-        en, code = JA_TO_EN_CODE[ja]
+        _, code = JA_TO_EN_CODE[ja]
         pool, cumulative, upper = pools[code]
         for _ in range(int(n)):
             seq += 1
@@ -286,7 +287,7 @@ def synthesize(numbers: dict, pools: dict, prefix: str, suffix: str,
             else:
                 end_date = ENDLESS
             rows.append({
-                "prefecture": en, "name": f"{base}_{seq:0{width}d}",
+                "prefecture": ja, "name": f"{base}_{seq:0{width}d}",
                 "lat": lat, "lon": lon, "mag1": mag1, "mag2": mag2,
                 "open_date": open_date.isoformat(), "end_date": end_date,
             })

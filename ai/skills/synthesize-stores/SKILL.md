@@ -27,7 +27,7 @@ stores cluster where people live.
 
 | column | meaning |
 | --- | --- |
-| `prefecture` | prefecture name as written in `Locations.md` (e.g. `Tokyo`) |
+| `prefecture` | prefecture name in Japanese/Kanji (e.g. `東京都`) |
 | `store_name` | `<prefix><prefecture><city/ward/town/village><ooaza><suffix>`, i.e. `<都道府県名><市区町村名><大字・町名>店` |
 | `latitude` | ooaza polygon centroid latitude (WGS84/JGD2000, 6 dp) |
 | `longitude` | ooaza polygon centroid longitude (6 dp) |

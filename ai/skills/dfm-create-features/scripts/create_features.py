@@ -7,9 +7,11 @@ and target_date ranges over the 7 days of week+1 (the next week). Features:
 
   * Regression  — past-zone sales aggregates (week-1 and week-1..4 levels,
     week-1 minus week-4 deltas, and per-ISO-weekday means).
-  * Weather     — high/avg temperature and rainfall for the target date, taken
-    from a forecast-unavailable proxy (previous-year same month/day of the
-    nearest weather station), applied identically in training and prediction.
+  * Weather     — high/avg temperature for the target date, taken from a
+    forecast-unavailable proxy (previous-year same month/day of the nearest
+    weather station), applied identically in training and prediction. Rainfall
+    (week+1_rainfall) carries no real signal under the one-year lag, so it always
+    falls back to the no-rain default (0).
   * Calendar    — month, weekday, weekend flag, and a cyclical day-of-year code.
 
 Target: actual_sales (the `sales` column of DATA/s03_primary/sales.tsv), left
@@ -273,8 +275,15 @@ def build_splits(sales_start: dt.date, today: dt.date):
         train_refs.append(r)
         r += dt.timedelta(days=7)
 
-    # Prediction: the single last valid reference date.
-    predict_refs = [last_valid]
+    # Prediction: relative to today (JST). On or after Thursday, this week's
+    # Thursday is already a valid reference date, so include the last two valid
+    # reference dates (this week's and the previous week's); before Thursday,
+    # this week's Thursday has not yet occurred, so include only the single last
+    # valid reference date (the previous week's Thursday).
+    if today.weekday() >= 3:  # Mon=0 .. Thu=3 .. Sun=6
+        predict_refs = [last_valid - dt.timedelta(days=7), last_valid]
+    else:
+        predict_refs = [last_valid]
     return train_refs, test_refs, predict_refs
 
 
@@ -364,7 +373,9 @@ def main() -> int:
                         wx = {
                             "week+1_high_temperature": weather_value(series, proxy_date(target), 0),
                             "week+1_avg_temperature": weather_value(series, proxy_date(target), 1),
-                            "week+1_rainfall": weather_value(series, proxy_date(target), 2),
+                            # The one-year-lag proxy carries no real signal for rainfall, so
+                            # week+1_rainfall always falls back to the no-rain default (0).
+                            "week+1_rainfall": 0.0,
                         }
                         actual = sales_map.get(target) if has_target else None
                         row = [name, ref.isoformat(), target.isoformat()]

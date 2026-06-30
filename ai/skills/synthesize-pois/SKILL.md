@@ -34,7 +34,7 @@ each run.
 
 | column | meaning |
 | --- | --- |
-| `prefecture` | English prefecture name (e.g. `Tokyo`) |
+| `prefecture` | prefecture name in Japanese/Kanji (e.g. `東京都`) |
 | `competitor_name` | `競合_<都道府県名><市区町村名><大字・町名>店_<seq>` |
 | `latitude` / `longitude` | uniform random point inside the ooaza polygon (6 dp) |
 | `weekday_sale_baseline` | uniform sample in `synthetics/competitors/weekday_sales_baseline` |
@@ -46,7 +46,7 @@ each run.
 
 | column | meaning |
 | --- | --- |
-| `prefecture` | English prefecture name |
+| `prefecture` | prefecture name in Japanese/Kanji |
 | `home_building_name` | `住宅_<都道府県名><市区町村名><大字・町名>レジデンス_<seq>` |
 | `latitude` / `longitude` | uniform random point inside the ooaza polygon (6 dp) |
 | `unit` | integer, uniform sample in `synthetics/home_buildings/unit_range` |

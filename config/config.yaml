@@ -155,3 +155,9 @@ synthetics:
           mu: 1.0
           sigma: 0.05
           bounds: [0.5, 1.5]    
+
+
+modeling:
+  training:
+    random_seed: 630
+    
