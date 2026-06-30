@@ -6,9 +6,10 @@ downloads daily-value (日別値) weather CSVs for all observation stations in t
 prefecture, one calendar month at a time, and saves each as
 ``DATA/s01_raw/weather-history-<prefecture>-<YYYY-MM-01>.csv``.
 
-The default period is the three full calendar years ending last December: the end
-month is December of the year before the current system year, and the start month
-is January two years before that end year (e.g. run in 2026 -> 2023-01 .. 2025-12).
+The default period runs from January three years before the end year up to the
+month of the date two days before today (the final month is truncated at that
+day), i.e. at least three full calendar years computed from the system date
+(e.g. run on 2026-06-15 -> 2023-01 .. 2026-06, the last month covering days 1..13).
 
 It speaks the portal's own POST API directly (no headless browser); only the
 Python standard library is used.
@@ -78,15 +79,19 @@ WAIT_BETWEEN_DOWNLOAD_ONCE = 2  # seconds to pause between downloads
 
 
 def default_period():
-    """Default (start, end) months, inclusive, relative to the current system date.
+    """Default (start, end, end_day), inclusive, relative to the system date.
 
-    End month  = December of the year before the current year.
-    Start month = January of the year two years before that end year
-                  (i.e. three full calendar years; run in 2026 -> 2023-01..2025-12).
+    End   = the month of the date two days before today; the final month is
+            truncated at that day (end_day), so it may be a partial month.
+    Start = January of the year three years before the end year (>= three full
+            calendar years).
+
+    e.g. run on 2026-06-15 -> 2023-01 .. 2026-06, the final month covering only
+    days 1..13.
     """
-    end_year = datetime.date.today().year - 1
-    start_year = end_year - 2
-    return (start_year, 1), (end_year, 12)
+    end_date = datetime.date.today() - datetime.timedelta(days=2)
+    start_year = end_date.year - 3
+    return (start_year, 1), (end_date.year, end_date.month), end_date.day
 
 # --- Long-format (TSV) schema --------------------------------------------------
 # The downloaded CSV is "wide": two leading columns (年月日, 曜日) followed by one
@@ -211,9 +216,8 @@ def month_iter(start, end):
             y, m = y + 1, 1
 
 
-def download_month(opener, stids, year, month):
-    """POST show/table for one month; return CSV bytes, or None if not a CSV."""
-    last_day = calendar.monthrange(year, month)[1]
+def download_month(opener, stids, year, month, last_day):
+    """POST show/table for one month (days 1..last_day); CSV bytes or None."""
     ymd = [str(year), str(year), str(month), str(month), "1", str(last_day)]
     data = {
         "stationNumList": json.dumps(stids),
@@ -294,12 +298,12 @@ def write_long_tsv(csv_bytes: bytes, dest: Path) -> int:
     return len(rows)
 
 
-def fetch_month(opener, stids, year, month):
-    """Download one month, retrying once after refreshing the session."""
-    body = download_month(opener, stids, year, month)
+def fetch_month(opener, stids, year, month, last_day):
+    """Download one month (days 1..last_day), retrying once after a refresh."""
+    body = download_month(opener, stids, year, month, last_day)
     if body is None:
         open_session(opener)
-        body = download_month(opener, stids, year, month)
+        body = download_month(opener, stids, year, month, last_day)
     return body
 
 
@@ -327,12 +331,18 @@ class Progress:
         self.prefix = prefix
         self.width = width
         self.tty = sys.stdout.isatty()
+        self.start = time.monotonic()
 
     def _line(self, label: str) -> str:
         frac = self.done / self.total if self.total else 1.0
         filled = int(round(self.width * frac))
         bar = "=" * filled + "-" * (self.width - filled)
-        return f"{self.prefix} |{bar}| {frac * 100:3.0f}%  {self.done}/{self.total}  {label}"
+        elapsed = time.monotonic() - self.start
+        # Total = running time stretched to 100% by the completed fraction (the
+        # projected total runtime); unknown until the first download completes.
+        total = f"Total {elapsed / frac:.0f} sec" if self.done else "Total -- sec"
+        return (f"{self.prefix} |{bar}| {frac * 100:3.0f}%  "
+                f"({elapsed:.0f} sec / {total})  {self.done}/{self.total}  {label}")
 
     def show(self, label: str) -> None:
         """Refresh the status line for the in-progress month (TTY only)."""
@@ -372,9 +382,10 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--repo-root", type=Path, default=None)
     ap.add_argument("--start", default=None,
-                    help="YYYY-MM (default: January three years before last December)")
+                    help="YYYY-MM (default: January of the end year minus three)")
     ap.add_argument("--end", default=None,
-                    help="YYYY-MM (default: December of the previous year)")
+                    help="YYYY-MM (default: the month two days before today; "
+                         "an explicit value covers the whole month)")
     ap.add_argument("--prefectures", default=None,
                     help="comma-separated full names to override Locations.md")
     ap.add_argument("--per-prefecture", action="store_true",
@@ -386,9 +397,15 @@ def main() -> int:
     long_dir = repo_root / "DATA" / "s02_intermediate"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    default_start, default_end = default_period()
+    default_start, default_end, default_end_day = default_period()
     start = tuple(int(x) for x in args.start.split("-")) if args.start else default_start
     end = tuple(int(x) for x in args.end.split("-")) if args.end else default_end
+    # The default end month is truncated two days before today; an explicit --end
+    # is treated as a whole month.
+    end_day = calendar.monthrange(*end)[1] if args.end else default_end_day
+
+    def last_day_of(year, month):
+        return end_day if (year, month) == end else calendar.monthrange(year, month)[1]
 
     if args.prefectures:
         prefectures = [p.strip() for p in args.prefectures.split(",") if p.strip()]
@@ -433,7 +450,8 @@ def main() -> int:
     combined_body0 = None
     if not args.per_prefecture:
         open_session(opener)
-        combined_body0 = fetch_month(opener, all_stids, *months[0])
+        y0, m0 = months[0]
+        combined_body0 = fetch_month(opener, all_stids, y0, m0, last_day_of(y0, m0))
 
     if combined_body0 is not None:
         print(f"Combined mode: {len(all_stids)} stations in one request "
@@ -444,7 +462,7 @@ def main() -> int:
             prog.show(f"downloading {stamp} ...")
             if i:
                 time.sleep(WAIT_BETWEEN_DOWNLOAD_ONCE)
-            body = combined_body0 if i == 0 else fetch_month(opener, all_stids, year, month)
+            body = combined_body0 if i == 0 else fetch_month(opener, all_stids, year, month, last_day_of(year, month))
             if body is None:
                 prog.note(f"    [FAIL] weather-history-all-{stamp}.csv: portal returned no CSV")
                 rc = 1
@@ -469,7 +487,7 @@ def main() -> int:
             prog.show(f"downloading {jma_name} {stamp} ...")
             if i:
                 time.sleep(WAIT_BETWEEN_DOWNLOAD_ONCE)
-            body = fetch_month(opener, stids, year, month)
+            body = fetch_month(opener, stids, year, month, last_day_of(year, month))
             if body is None:
                 prog.note(f"    [FAIL] weather-history-{jma_name}-{stamp}.csv: portal returned no CSV")
                 rc = 1

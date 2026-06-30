@@ -5,8 +5,9 @@ description: >-
   "過去の気象データ・ダウンロード" portal for the prefectures where Ichimaru
   operates (docs/profiles/Locations.md). Downloads daily values for all
   observation stations, all prefectures combined, one calendar month at a time
-  over the last 3 full calendar years (computed from the system date), saving the
-  raw CSV to DATA/s01_raw/ and a long-format UTF-8 TSV to DATA/s02_intermediate/.
+  from January three years ago up to the month two days before today (at least
+  three full calendar years, computed from the system date), saving the raw CSV to
+  DATA/s01_raw/ and a long-format UTF-8 TSV to DATA/s02_intermediate/.
   Use when asked to retrieve, refresh, or bootstrap historical weather data for
   the demo.
 ---
@@ -60,15 +61,23 @@ python ai/skills/retrieve-weather-history/scripts/retrieve_weather.py
 ```
 
 The script is dependency-free (Python standard library only). By default it
-covers the **last 3 full calendar years** — end month = December of the previous
-year, start month = January two years before that — computed from the system
-date (e.g. run in 2026 → 2023-01 .. 2025-12 = 36 monthly combined downloads),
+covers the **at least last 3 full calendar years** — end month = The date of 2 days before current system date, start month = January three years before that — computed from the system
+date (e.g. run in 2026-06-15 → 2023-01 .. 2026-06 = 42 monthly combined downloads, with the last month having 13 days),
 taking roughly 4–6 minutes (there is a courtesy pause between downloads — see
 below). The per-prefecture fallback is 4× as many downloads.
 
-Progress is shown with a single refreshable status line — a progress bar plus the
-month currently downloading — that redraws in place on a terminal (and falls back
-to one plain line per completed download when the output is piped or logged).
+Progress is shown with a single refreshable status line — a progress bar, the
+elapsed seconds and projected total runtime (`Total`), the count, and the month
+currently downloading — that redraws in place on a terminal (and falls back to one
+plain line per completed download when the output is piped or logged), e.g.:
+
+```
+Weather history |==============--------------|  50%  (230 sec / Total 460 sec)  18/36  2024-12-01
+```
+
+The `Total` is the running time stretched to 100% by the completed fraction (i.e.
+`elapsed / progress`, the projected total runtime), shown as `--` until the first
+download completes.
 
 Useful options for testing or partial refreshes:
 
