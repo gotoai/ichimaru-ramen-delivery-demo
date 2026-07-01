@@ -5,7 +5,7 @@
 PYTHON := $(shell [ -x .venv/bin/python ] && echo .venv/bin/python || echo python3)
 
 .DEFAULT_GOAL := help
-.PHONY: help base-data synthetics features modeling prediction diagnosis calibration
+.PHONY: help base-data synthetics features modeling prediction diagnosis search
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -44,6 +44,9 @@ diagnosis: ## Back-test, compute residuals (feature vs actual weather), then dia
 	$(PYTHON) ai/skills/diagnosis-calculate-residuals/scripts/calculate_residuals.py
 	$(PYTHON) ai/skills/diagnosis-calculate-slopes/scripts/calculate_slopes.py
 
-calibration: ## Fetch the live JMA weather forecast (today+1/+2/+3) -> DATA/s08_calibration/
-	# Live data from the JMA forecast API; result depends on run time (JMA reissues ~05/11/17 JST).
-	$(PYTHON) ai/skills/fetch-weather-forecast/scripts/fetch_weather_forecast.py
+search: ## Fetch live JMA weather forecast + web-search local events -> DATA/s08_search/
+	# Live data. Weather: JMA forecast API (free; reissued ~05/11/17 JST).
+	$(PYTHON) ai/skills/search-weather-forecast/scripts/search_weather_forecast.py
+	# Events: Tavily web search — needs TAVILY_API_KEY in .env and spends API credits
+	# (~one 'advanced' search per distinct location). Preview with --dry-run first.
+	$(PYTHON) ai/skills/search-events/scripts/search_events.py

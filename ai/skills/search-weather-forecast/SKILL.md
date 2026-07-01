@@ -1,12 +1,12 @@
 ---
-name: fetch-weather-forecast
+name: search-weather-forecast
 description: >-
   Fetch the JMA short-range + weekly weather forecast for the prefectures where
   Ichimaru operates (docs/profiles/Locations.md) and write a per-市区町村, per-day
-  table for today+1/+2/+3, per docs/calibration/Weather-forecast.md. Reads the JMA
+  table for today+1/+2/+3, per docs/search/Weather-forecast.md. Reads the JMA
   forecast JSON API (not the JavaScript web page), maps weather codes to the concise
   天気概況 telop names, estimates a daily rainfall volume, and writes
-  DATA/s08_calibration/weather_forecast.tsv. Use to obtain live forecast weather.
+  DATA/s08_search/weather_forecast.tsv. Use to obtain live forecast weather.
 ---
 
 # Fetch weather forecast
@@ -14,11 +14,11 @@ description: >-
 Downloads the JMA 府県天気予報 (short-range) + 週間天気予報 (weekly) for Ichimaru's
 prefectures and produces a per-市区町村, per-day forecast table for the next three
 days, following
-[docs/calibration/Weather-forecast.md](../../../docs/calibration/Weather-forecast.md).
+[docs/search/Weather-forecast.md](../../../docs/search/Weather-forecast.md).
 
 ## What it produces
 
-One UTF-8, tab-separated file with a header row, `DATA/s08_calibration/weather_forecast.tsv`
+One UTF-8, tab-separated file with a header row, `DATA/s08_search/weather_forecast.tsv`
 (directory created if missing) — one row per **(prefecture, sub_region, 市区町村,
 target_date)** for `target_date` = today+1, today+2, today+3 (JST). Columns:
 
@@ -47,7 +47,7 @@ From the repo root, with the project `.venv` active (stdlib only — no venv str
 required):
 
 ```bash
-python ai/skills/fetch-weather-forecast/scripts/fetch_weather_forecast.py
+python ai/skills/search-weather-forecast/scripts/search_weather_forecast.py
 ```
 
 Options: `--repo-root <path>` (auto-detected), `--today YYYY-MM-DD` (override "today",
@@ -87,4 +87,4 @@ for testing). Re-running overwrites the output.
 - **Islands** (伊豆諸島/小笠原) have no demo stores; their today+3 fields may be blank
   because the weekly forecast merges/omits them. This is expected.
 - The embedded telop table, endpoints, and rainfall thresholds are constants at the
-  top of [scripts/fetch_weather_forecast.py](scripts/fetch_weather_forecast.py).
+  top of [scripts/search_weather_forecast.py](scripts/search_weather_forecast.py).

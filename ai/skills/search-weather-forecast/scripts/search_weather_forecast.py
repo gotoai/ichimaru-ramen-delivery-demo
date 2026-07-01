@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fetch the JMA short-range + weekly forecast for Ichimaru's prefectures.
 
-Implements docs/calibration/Weather-forecast.md. For each target prefecture it reads
+Implements docs/search/Weather-forecast.md. For each target prefecture it reads
 the JMA forecast JSON (NOT the JavaScript web page) and produces a per-市区町村,
 per-day table for today+1, today+2, today+3 (JST):
 
@@ -17,7 +17,7 @@ sub-region's representative temperature point (amedas) from forecast/const/
 forecast_area.json.
 
 Source: https://www.jma.go.jp/bosai/forecast/data/forecast/<office>.json
-Output: DATA/s08_calibration/weather_forecast.tsv (UTF-8 TSV, header row).
+Output: DATA/s08_search/weather_forecast.tsv (UTF-8 TSV, header row).
 
 Stdlib only. NOTE: this fetches live data, so the result depends on the run time
 (JMA reissues forecasts around 05/11/17 JST); it is not reproducible.
@@ -42,7 +42,7 @@ ROOT = "https://www.jma.go.jp/bosai"
 FORECAST_URL = ROOT + "/forecast/data/forecast/{office}.json"
 AREA_URL = ROOT + "/common/const/area.json"
 FORECAST_AREA_URL = ROOT + "/forecast/const/forecast_area.json"
-USER_AGENT = "Mozilla/5.0 (compatible; ichimaru-demo/1.0; +fetch-weather-forecast skill)"
+USER_AGENT = "Mozilla/5.0 (compatible; ichimaru-demo/1.0; +search-weather-forecast skill)"
 
 TARGET_OFFSETS = (1, 2, 3)  # today+1, today+2, today+3
 
@@ -118,9 +118,9 @@ def jst_date(iso: str) -> datetime.date:
 
 def find_repo_root(start: Path) -> Path:
     for p in [start, *start.parents]:
-        if (p / "docs" / "calibration" / "Weather-forecast.md").exists():
+        if (p / "docs" / "search" / "Weather-forecast.md").exists():
             return p
-    raise SystemExit("Could not locate repo root (docs/calibration/Weather-forecast.md not found).")
+    raise SystemExit("Could not locate repo root (docs/search/Weather-forecast.md not found).")
 
 
 def read_target_offices(locations_md: Path, offices: dict) -> list[tuple[str, str]]:
@@ -297,7 +297,7 @@ def main() -> int:
                     rows.append([pref_name, sub_name, town, d.isoformat(),
                                  name, pop, reli, hi, lo, rain])
 
-    out = repo_root / "DATA" / "s08_calibration" / "weather_forecast.tsv"
+    out = repo_root / "DATA" / "s08_search" / "weather_forecast.tsv"
     out.parent.mkdir(parents=True, exist_ok=True)
     with open(out, "w", encoding="utf-8", newline="") as f:
         w = csv.writer(f, delimiter="\t", lineterminator="\n")

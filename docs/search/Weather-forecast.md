@@ -96,7 +96,7 @@ One row per (prefecture, sub_region, 市区町村, target_date). Columns:
   - 最低気温
   - 推定日降水量(mm)
 
-Save to `DATA/s08_calibration/weather_forecast.tsv` (UTF-8 TSV, header row; create
+Save to `DATA/s08_search/weather_forecast.tsv` (UTF-8 TSV, header row; create
 the directory if missing).
 
 ### Notes
