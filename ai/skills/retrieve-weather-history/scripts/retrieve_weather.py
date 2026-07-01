@@ -31,12 +31,15 @@ import argparse
 import calendar
 import csv
 import datetime
+import http.client
 import http.cookiejar
 import io
 import json
 import re
+import socket
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -78,6 +81,51 @@ OPTION_FLAGS = {
 }
 
 WAIT_BETWEEN_DOWNLOAD_ONCE = 2  # seconds to pause between downloads
+
+# --- Network retry -------------------------------------------------------------
+# The JMA portal occasionally times out or drops a connection mid-download. Each
+# HTTP request is retried up to NET_ATTEMPTS times, pausing RETRY_BACKOFF * attempt
+# seconds between tries, before giving up and re-raising.
+NET_ATTEMPTS = 3
+RETRY_BACKOFF = 3  # seconds (multiplied by the attempt number)
+# Transient errors worth retrying: timeouts, dropped/refused connections, and a
+# download that aborts in the middle (IncompleteRead).
+RETRYABLE_ERRORS = (
+    urllib.error.URLError,
+    http.client.HTTPException,
+    socket.timeout,
+    TimeoutError,
+    ConnectionError,
+)
+
+
+def with_retry(func, what: str, attempts: int = NET_ATTEMPTS):
+    """Call ``func()``, retrying transient network errors up to ``attempts`` times.
+
+    On a retryable error the call is retried after a short, growing backoff; if
+    every attempt fails the last exception is re-raised so the caller still sees
+    the failure. ``what`` is a short label used in the warning lines (stderr).
+    """
+    for attempt in range(1, attempts + 1):
+        try:
+            return func()
+        except RETRYABLE_ERRORS as exc:
+            # HTTP error responses (4xx/5xx) other than the transient 5xx ones
+            # are not worth retrying — treat them as a hard failure.
+            if isinstance(exc, urllib.error.HTTPError) and exc.code < 500:
+                raise
+            if attempt >= attempts:
+                sys.stderr.write(
+                    f"\n[retry] {what}: failed after {attempts} attempts ({exc}); giving up.\n"
+                )
+                raise
+            wait = RETRY_BACKOFF * attempt
+            sys.stderr.write(
+                f"\n[retry] {what}: attempt {attempt}/{attempts} failed ({exc}); "
+                f"retrying in {wait}s ...\n"
+            )
+            sys.stderr.flush()
+            time.sleep(wait)
 
 
 def default_period():
@@ -144,14 +192,18 @@ def make_session():
 
 def open_session(opener):
     """GET index.php to (re)establish the ci_session cookie."""
-    opener.open(INDEX_URL, timeout=60).read()
+    with_retry(lambda: opener.open(INDEX_URL, timeout=60).read(), "GET index.php")
 
 
 def post(opener, url, data, timeout=180):
     body = urllib.parse.urlencode(data).encode()
-    req = urllib.request.Request(url, data=body, headers={"Referer": INDEX_URL})
-    resp = opener.open(req, timeout=timeout)
-    return resp, resp.read()
+
+    def _do():
+        req = urllib.request.Request(url, data=body, headers={"Referer": INDEX_URL})
+        resp = opener.open(req, timeout=timeout)
+        return resp, resp.read()
+
+    return with_retry(_do, f"POST {url}")
 
 
 # -------------------------------------------------------------------------------

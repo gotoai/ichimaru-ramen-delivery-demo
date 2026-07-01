@@ -63,8 +63,12 @@ python ai/skills/retrieve-weather-history/scripts/retrieve_weather.py
 The script is dependency-free (Python standard library only). By default it
 covers the **at least last 3 full calendar years** — end month = The date of 2 days before current system date, start month = January three years before that — computed from the system
 date (e.g. run in 2026-06-15 → 2023-01 .. 2026-06 = 42 monthly combined downloads, with the last month having 13 days),
-taking roughly 4–6 minutes (there is a courtesy pause between downloads — see
-below). The per-prefecture fallback is 4× as many downloads.
+taking roughly **12–30 minutes** in total. Each monthly download is generated
+server-side by the JMA portal and takes about **15–40 seconds** on its own
+(proportional to stations × days; ~76 stations × 10 elements × ~30 days), varying
+with JMA server load — that, plus a courtesy pause between downloads (see below),
+dominates the runtime. The per-prefecture fallback is 4× as many downloads (each
+faster, since it covers fewer stations).
 
 Progress is shown with a single refreshable status line — a progress bar, the
 elapsed seconds and projected total runtime (`Total`), the count, and the month
@@ -72,7 +76,7 @@ currently downloading — that redraws in place on a terminal (and falls back to
 plain line per completed download when the output is piped or logged), e.g.:
 
 ```
-Weather history |==============--------------|  50%  (230 sec / Total 460 sec)  18/36  2024-12-01
+Weather history |==============--------------|  50%  (450 sec / Total 900 sec)  18/36  2024-12-01
 ```
 
 The `Total` is the running time stretched to 100% by the completed fraction (i.e.
@@ -124,6 +128,14 @@ The portal is a stateful POST API (no headless browser needed):
   from excessive automated access. The script downloads one month at a time and
   pauses `WAIT_BETWEEN_DOWNLOAD_ONCE = 2` seconds between downloads. Please keep
   this in place and avoid running the full job repeatedly.
+- **Network retry.** The portal occasionally times out or drops a connection
+  mid-download. Every HTTP request (session GET, station listing, and each month
+  download) is retried up to `NET_ATTEMPTS = 3` times on transient errors
+  (timeouts, dropped/refused connections, `IncompleteRead`), pausing
+  `RETRY_BACKOFF × attempt` seconds between tries; retry warnings go to stderr.
+  If all attempts fail the error is re-raised. This is separate from the
+  session-expiry retry (a rejected CSV download is retried once after refreshing
+  the session). Non-transient HTTP errors (4xx) are not retried.
 - The portal limits the data volume per download, which is why the script works
   month-by-month rather than fetching the whole range at once.
 - Some elements (雲量, 天気概況, 相対湿度) are only observed at staffed stations
