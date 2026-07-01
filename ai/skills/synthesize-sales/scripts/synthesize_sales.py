@@ -213,9 +213,13 @@ def main() -> int:
         ed = parse_date(e["event_date"])
         events.append((float(e["latitude"]), float(e["longitude"]), int(e["people"]), ed))
 
-    # station master: name -> (lat, lon)
+    # station master: name -> (lat, lon); active, temperature-capable stations only
     station_master = {}
     for s in read_tsv(inter / "weather-station.tsv"):
+        if s.get("End Date", "").strip() != OPEN_ENDED:
+            continue                                    # active stations only
+        if s.get("Temperature", "").strip() != "1":
+            continue                                    # must have a temperature sensor
         lat, lon = parse_float(s["Latitude_Precipitation"]), parse_float(s["Longitude_Precipitation"])
         if lat is not None and lon is not None:
             station_master[s["Station Name (Kanji)"].strip()] = (lat, lon)

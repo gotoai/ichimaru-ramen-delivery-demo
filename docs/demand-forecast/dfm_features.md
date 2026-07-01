@@ -143,11 +143,15 @@ would be label-adjacent leakage at serve time. The proxy logic:
 skill: weather observations live in `DATA/s02_intermediate/weather_history_*.tsv`
 (keyed by the Japanese station name `観測地点`), and station coordinates live in
 `DATA/s02_intermediate/weather-station.tsv` (active stations only,
-`End Date = 9999-99-99`), matched by station name (`Station Name (Kanji)`). For
-each store, use the **nearest** station (by haversine distance, Earth radius
-6,371,000 m) that has both coordinates and observations. The store's English
-prefecture is not needed for the join — selection is by global nearest matched
-station — but note the weather files use Japanese prefecture names.
+`End Date = 9999-99-99`), matched by station name (`Station Name (Kanji)`).
+**Stations without a temperature sensor (`Temperature` flag != `1`, i.e.
+precipitation-only rain gauges) are removed before matching**, so every store is
+associated with a station that can report temperature (otherwise its temperature
+features would be blank). For each store, use the **nearest** such station (by
+haversine distance, Earth radius 6,371,000 m) that has coordinates and
+observations. The store's English prefecture is not needed for the join —
+selection is by global nearest matched station — but note the weather files use
+Japanese prefecture names.
 
 All weather variables are numeric:
 

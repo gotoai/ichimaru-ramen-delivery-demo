@@ -8,7 +8,7 @@ forecasts is **out of scope** here and is handled by a separate skill.
 ### Data sets
 
 The feature data sets are produced by the `dfm-create-features` skill. Refer to
-`ichimaru-ramen-delivery-demo/docs/demand-forecast/dfm_features.md` for column
+`docs/demand-forecast/dfm_features.md` for column
 definitions and the train/test/prediction split rules. This skill consumes:
 
   - `DATA/s04_feature/training_dataset.tsv` — used for fine-tuning and the final
@@ -88,7 +88,7 @@ with the lowest validation **MAPE**.
 ### Reproducibility
 
 Set the LightGBM `random_state` (and any other seed) from
-`ichimaru-ramen-delivery-demo/config/config.yaml`, key
+`config/config.yaml`, key
 `modeling/training/random_seed`, so the build is deterministic for fixed inputs.
 
 ### Final model fit
@@ -100,7 +100,7 @@ one evaluated on the test set and saved as the production artifact.
 
 ### Output
 
-All artifacts are written under `ichimaru-ramen-delivery-demo/DATA/s05_model/`
+All artifacts are written under `DATA/s05_model/`
 (created if it does not exist).
 
 **Model artifact.** Save the refit booster in LightGBM's native text format and

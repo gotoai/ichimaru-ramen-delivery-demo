@@ -1,6 +1,6 @@
 ## Stores
 
-The number of stores in each prefecture is indicated in `ichimaru-ramen-delivery-demo/docs/profiles/Locations.md`.
+The number of stores in each prefecture is indicated in `docs/profiles/Locations.md`.
 
 Randomly sample the store locations in each prefecture with the indicated number of stores. The sampling algorithm is given as follows. Pass the arguments as:
   - prefecture = each prefecture indicated by above `Locations.md`
@@ -12,7 +12,7 @@ Randomly sample the store locations in each prefecture with the indicated number
 
 #### Location sampling algorithm
   - Input data
-    - population: `ichimaru-ramen-delivery-demo/DATA/s02_intermediate/regional_population.tsv`
+    - population: `DATA/s02_intermediate/regional_population.tsv`
     - geo-shape: `geoshape_[prefecture_code]`
 
   - Arguments:
@@ -39,7 +39,7 @@ Randomly sample the store locations in each prefecture with the indicated number
     - Uniformly sampling the magnitude(s)
 
 
-#### Save the sampled stores to `ichimaru-ramen-delivery-demo/DATA/s03_primary/store.tsv`
+#### Save the sampled stores to `DATA/s03_primary/store.tsv`
   - Columns layout:
     - prefecture
     - store_name

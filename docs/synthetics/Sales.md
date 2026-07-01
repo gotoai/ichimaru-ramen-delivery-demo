@@ -47,52 +47,52 @@ The algorithm below computes the sales for a single (store, date). The skill app
 - Processes
   1. Baseline
     - Select the initinal baseline value B according to the weekday/weekend of the target date.
-    - Sample the sacle Sb, indicated by file `ichimaru-ramen-delivery-demo/config/config.yaml`, `synthetics/sales/baseline/scale_sampling`
-    - Sample the noise Nb, indicated by file `ichimaru-ramen-delivery-demo/config/config.yaml`, `synthetics/sales/baseline/noise_sampling`
+    - Sample the sacle Sb, indicated by file `config/config.yaml`, `synthetics/sales/baseline/scale_sampling`
+    - Sample the noise Nb, indicated by file `config/config.yaml`, `synthetics/sales/baseline/noise_sampling`
     - At then end of this process, the sales value Y is: y1 = B * Sb * Nb
 
   2. Home building influences
-    - Select all home buildings, from `ichimaru-ramen-delivery-demo/DATA/s03_primary/home_building.tsv`, and keep those that are **active on the target date** (open_date <= date <= end_date; end_date '9999-99-99' means open-ended) and whose map distance to the store is no greater than 500 meters
+    - Select all home buildings, from `DATA/s03_primary/home_building.tsv`, and keep those that are **active on the target date** (open_date <= date <= end_date; end_date '9999-99-99' means open-ended) and whose map distance to the store is no greater than 500 meters
 
     - For each home building having number of units Uh, with map distance to the store Dh, calculate the additional demand factor by:
       Yh = Uh / 10 * Sh * (100 / (100 + Dh)) * Nh
 
-    Where Sh and Nh is the sampled scale and noise indicated by file `ichimaru-ramen-delivery-demo/config/config.yaml`, `synthetics/sales/home_building/[scale|noise]_sampling`
+    Where Sh and Nh is the sampled scale and noise indicated by file `config/config.yaml`, `synthetics/sales/home_building/[scale|noise]_sampling`
 
     - Update y1 to y2 by adding the additional demand factors to the sales:
       y2 = y1 + (Yh1 + Yh2 + ...)
 
 
   3. Competitor influences
-    - Select all competitors, from `ichimaru-ramen-delivery-demo/DATA/s03_primary/competitor.tsv`, and keep those that are **active on the target date** (open_date <= date <= end_date; end_date '9999-99-99' means open-ended) and whose map distance to the store is no greater than 50 meters
+    - Select all competitors, from `DATA/s03_primary/competitor.tsv`, and keep those that are **active on the target date** (open_date <= date <= end_date; end_date '9999-99-99' means open-ended) and whose map distance to the store is no greater than 50 meters
 
     - For each select the baseline sales Bc according to the weekday/weekend, with map distance to the store Dc, calculate the additional negative demand factor by:
       Yc = - Bc / 4 * Sc * (10 / (10 + Dc)) * Nc
 
-    Where Sc and Nc is the sampled scale and noise indicated by file `ichimaru-ramen-delivery-demo/config/config.yaml`, `synthetics/sales/competitor/[scale|noise]_sampling`
+    Where Sc and Nc is the sampled scale and noise indicated by file `config/config.yaml`, `synthetics/sales/competitor/[scale|noise]_sampling`
 
     - Update y2 to y3 by adding the additional demand factors to the sales:
       y3 = y2 + (Yc1 + Yc2 + ...)
 
   4. Event influences
-    - Select all events, from `ichimaru-ramen-delivery-demo/DATA/s03_primary/event.tsv`, and keep those whose **event_date equals the target date** and whose map distance to the store is no greater than 200 meters
+    - Select all events, from `DATA/s03_primary/event.tsv`, and keep those whose **event_date equals the target date** and whose map distance to the store is no greater than 200 meters
 
     - For each select the number of people Pe from `event.tsv`, with map distance to the store De, calculate the additional demand factor by:
       Ye = Pe / 20 * Se * (50 / (50 + De)) * Ne
 
-    Where Se and Ne is the sampled scale and noise indicated by file `ichimaru-ramen-delivery-demo/config/config.yaml`, `synthetics/sales/event/[scale|noise]_sampling`
+    Where Se and Ne is the sampled scale and noise indicated by file `config/config.yaml`, `synthetics/sales/event/[scale|noise]_sampling`
 
     - Update y3 to y4 by adding the additional demand factors to the sales:
       y4 = y3 + (Ye1 + Ye2 + ...)
 
   5. Temperature influences
-    - Usable weather stations are those that can be **both located and observed**: match the station master `DATA/s02_intermediate/weather-station.tsv` (which has coordinates) to the observation files `DATA/s02_intermediate/weather_history_all_*.tsv` (`観測地点`) by station name on a best-effort basis, and drop stations that cannot be matched (no coordinates).
+    - Usable weather stations are those that are **active, temperature-capable, located, and observed**: from the station master `DATA/s02_intermediate/weather-station.tsv` keep only active stations (`End Date = 9999-99-99`) that have a temperature sensor (`Temperature` flag = `1`) and coordinates, then match them to the observation files `DATA/s02_intermediate/weather_history_all_*.tsv` (`観測地点`) by station name on a best-effort basis. **Stations without a temperature sensor (precipitation-only rain gauges) are removed before matching**, so every store is associated with a station that can report temperature.
     - Find the nearest such weather station W to the store (by map distance), and fetch the high temperature Th = `最高気温(℃)` of W on the target date. If the value is missing, fill it forward from the most recent value within the previous 3 days; if still missing, skip this processing (leave the sales unchanged for this factor).
 
     - Update y4 to y5 by applying the adjustment
       y5 = y4 * (1 + (20 - Th) * 0.02 * St) * Nt
 
-    Where St and Nt is the sampled scale and noise indicated by file `ichimaru-ramen-delivery-demo/config/config.yaml`, `synthetics/sales/weather_temperature/[scale|noise]_sampling`
+    Where St and Nt is the sampled scale and noise indicated by file `config/config.yaml`, `synthetics/sales/weather_temperature/[scale|noise]_sampling`
 
 
   6. Rain influences
@@ -101,13 +101,13 @@ The algorithm below computes the sales for a single (store, date). The skill app
     - Update y5 to y6 by applying the adjustment
       y6 = y5 * (30 / (30 + Vr) * Sr) * Nr
 
-    Where Sr and Nr are the sampled scale and noise indicated by file `ichimaru-ramen-delivery-demo/config/config.yaml`, `synthetics/sales/weather_rain/[scale|noise]_sampling`
+    Where Sr and Nr are the sampled scale and noise indicated by file `config/config.yaml`, `synthetics/sales/weather_rain/[scale|noise]_sampling`
 
 
 #### Output
 The final sales value y6 is rounded to the nearest integer (bowls are whole) and clamped to a minimum of 10 (never below 10).
 
-Save the sales to `ichimaru-ramen-delivery-demo/DATA/s03_primary/sales.tsv`
+Save the sales to `DATA/s03_primary/sales.tsv`
   - Columns layout:
     - prefecture
     - store_name

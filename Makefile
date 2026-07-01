@@ -5,7 +5,7 @@
 PYTHON := $(shell [ -x .venv/bin/python ] && echo .venv/bin/python || echo python3)
 
 .DEFAULT_GOAL := help
-.PHONY: help base-data synthetics features modeling prediction
+.PHONY: help base-data synthetics features modeling prediction calibration
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -18,13 +18,14 @@ base-data: ## Download population, boundary shapefiles, weather stations, and we
 	# JMA daily weather history, last 3 full calendar years — long step, ~4-6 min
 	$(PYTHON) ai/skills/retrieve-weather-history/scripts/retrieve_weather.py
 
-synthetics: ## Synthesize primary data (stores, competitors, home buildings, events, sales) from base data (setup step 2)
+synthetics: ## Synthesize primary data (stores, competitors, home buildings, events, sales; match weather stations) from base data (setup step 2)
 	# Requires the `base-data` outputs in DATA/s02_intermediate/ — run `make base-data` first.
 	$(PYTHON) -m pip install -q -r requirements.txt
 	$(PYTHON) ai/skills/synthesize-stores/scripts/synthesize_stores.py
 	$(PYTHON) ai/skills/synthesize-pois/scripts/synthesize_pois.py
 	$(PYTHON) ai/skills/synthesize-events/scripts/synthesize_events.py
 	$(PYTHON) ai/skills/synthesize-sales/scripts/synthesize_sales.py
+	$(PYTHON) ai/skills/match-store-weather-station/scripts/match_store_weather_station.py
 
 modeling: ## Build DFM features then train/tune/evaluate the demand-forecast model (setup step 3)
 	# Requires the `synthetics` outputs in DATA/s03_primary/ — run `make synthetics` first.
@@ -32,6 +33,12 @@ modeling: ## Build DFM features then train/tune/evaluate the demand-forecast mod
 	$(PYTHON) ai/skills/dfm-create-features/scripts/create_features.py
 	$(PYTHON) ai/skills/dfm-build-model/scripts/build_model.py
 
-prediction: ## Score the trained model on the prediction set -> DATA/s06_prediction/ (setup step 4)
+prediction: ## Score the trained model on the prediction set, then SHAP-explain it -> DATA/s06_prediction/ (setup step 4)
 	# Requires the `modeling` outputs in DATA/s05_model/ — run `make modeling` first.
 	$(PYTHON) ai/skills/dfm-predict-sales/scripts/predict_sales.py
+	$(PYTHON) ai/skills/dfm-explain-predictions/scripts/explain_predictions.py
+
+calibration: ## Back-test the model then compute residuals (feature vs actual weather) -> DATA/s07_calibration/
+	# Requires the `modeling` outputs, plus the matched-weather file from `synthetics` — run `make synthetics modeling` first.
+	$(PYTHON) ai/skills/calibration-backtest/scripts/backtest_sales.py
+	$(PYTHON) ai/skills/calibration-calculate-residuals/scripts/calculate_residuals.py
