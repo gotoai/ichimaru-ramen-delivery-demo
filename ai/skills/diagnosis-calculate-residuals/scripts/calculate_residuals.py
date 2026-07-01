@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Compute back-test residuals with model-feature vs actual weather side by side.
 
-Implements docs/calibration/Residuals.md. Tests whether the DFM's weather-feature
+Implements docs/diagnosis/Residuals.md. Tests whether the DFM's weather-feature
 proxy (previous-year temperature, 0 rainfall) contributes to forecast error:
 
-  1. Read DATA/s07_calibration/backtest_sales.tsv (predicted vs actual over the
+  1. Read DATA/s07_diagnosis/backtest_sales.tsv (predicted vs actual over the
      latest 4 test weeks) and add residual = predicted_sales - actual_sales.
   2. Join the model's feature weather from DATA/s04_feature/test_dataset.tsv
      (week+1_high_temperature, week+1_avg_temperature, week+1_rainfall) on the 3 key
@@ -14,7 +14,7 @@ proxy (previous-year temperature, 0 rainfall) contributes to forecast error:
      (観測地点) and the target date (日付), prefixed actual_. The store->station map
      comes from DATA/s03_primary/matched_store_weather_station.tsv (the same
      assignment the model's proxy used).
-  4. Write DATA/s07_calibration/residuals.tsv (UTF-8 TSV, header row).
+  4. Write DATA/s07_diagnosis/residuals.tsv (UTF-8 TSV, header row).
 """
 from __future__ import annotations
 
@@ -42,9 +42,9 @@ OUT_COLS = (
 
 def find_repo_root(start: Path) -> Path:
     for p in [start, *start.parents]:
-        if (p / "docs" / "calibration" / "Residuals.md").exists():
+        if (p / "docs" / "diagnosis" / "Residuals.md").exists():
             return p
-    raise SystemExit("Could not locate repo root (docs/calibration/Residuals.md not found).")
+    raise SystemExit("Could not locate repo root (docs/diagnosis/Residuals.md not found).")
 
 
 def require(path: Path, hint: str) -> Path:
@@ -81,13 +81,13 @@ def main() -> int:
     args = ap.parse_args()
 
     repo = args.repo_root or find_repo_root(Path(__file__).resolve())
-    backtest_tsv = repo / "DATA" / "s07_calibration" / "backtest_sales.tsv"
+    backtest_tsv = repo / "DATA" / "s07_diagnosis" / "backtest_sales.tsv"
     test_tsv = repo / "DATA" / "s04_feature" / "test_dataset.tsv"
     matched_tsv = repo / "DATA" / "s03_primary" / "matched_store_weather_station.tsv"
     inter = repo / "DATA" / "s02_intermediate"
-    out_path = repo / "DATA" / "s07_calibration" / "residuals.tsv"
+    out_path = repo / "DATA" / "s07_diagnosis" / "residuals.tsv"
 
-    require(backtest_tsv, "run the calibration-backtest skill first.")
+    require(backtest_tsv, "run the diagnosis-backtest skill first.")
     require(test_tsv, "run the dfm-create-features skill first.")
     require(matched_tsv, "run the match-store-weather-station skill first.")
 

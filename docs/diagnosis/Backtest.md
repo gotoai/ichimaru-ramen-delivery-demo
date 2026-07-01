@@ -1,10 +1,10 @@
 ## Back Test
 
-Back test the Demand Forecast Model (DFM) against known actuals for calibration
+Back test the Demand Forecast Model (DFM) against known actuals for diagnosis
 purposes: re-score the trained model over the most recent slice of the test
 period, where the true `actual_sales` are available, and emit predicted vs actual
 side by side. This is the prediction source consumed by the residuals /
-calibration analysis (see `docs/calibration/Residuals.md`).
+diagnosis analysis (see `docs/diagnosis/Residuals.md`).
 
 ### Back Test Period
 
@@ -53,8 +53,8 @@ A UTF-8, tab-separated file with a header row and the following column layout
   - `predicted_sales` — the raw model output as a float (no rounding and no
     clamping; flooring/rounding is left to downstream consumers).
 
-Save to `DATA/s07_calibration/backtest_sales.tsv`
-(the `DATA/s07_calibration/` directory is created if it does not exist).
+Save to `DATA/s07_diagnosis/backtest_sales.tsv`
+(the `DATA/s07_diagnosis/` directory is created if it does not exist).
 
 ### Notes
 

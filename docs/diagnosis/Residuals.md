@@ -7,7 +7,7 @@ contributes to forecast error.
 ### Calculate residuals
 
 Start from the back-test output
-`DATA/s07_calibration/backtest_sales.tsv` (predicted
+`DATA/s07_diagnosis/backtest_sales.tsv` (predicted
 vs actual over the latest 4 test weeks — the window is defined there; do not
 re-derive it here). Add a `residual` column:
 
@@ -49,8 +49,8 @@ weather on each target date. Join two sources onto the residual rows:
 
 ### Output
 
-Save to `DATA/s07_calibration/residuals.tsv` (create
-`DATA/s07_calibration/` if it does not exist). UTF-8 TSV with a header row; one row
+Save to `DATA/s07_diagnosis/residuals.tsv` (create
+`DATA/s07_diagnosis/` if it does not exist). UTF-8 TSV with a header row; one row
 per back-test row. Column layout (the names below are the literal header — no
 surrounding quotes):
 
@@ -72,5 +72,5 @@ surrounding quotes):
 
   - Requires `pandas`/`numpy` (already in `requirements.txt`) — not stdlib-only.
   - Deterministic for fixed inputs.
-  - Depends on the `calibration-backtest` and `match-store-weather-station` outputs
+  - Depends on the `diagnosis-backtest` and `match-store-weather-station` outputs
     plus `test_dataset.tsv` and the weather history; run those first.

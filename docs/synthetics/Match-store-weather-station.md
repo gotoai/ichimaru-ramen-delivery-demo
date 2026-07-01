@@ -5,8 +5,8 @@ represent that store's weather, and persist the mapping. This is the **same**
 store→station assignment the Demand Forecast Model already uses for its weather
 features (computed on the fly, but not persisted, inside
 `dfm-create-features` / `create_features.py`). Persisting it here lets downstream
-consumers — notably the residuals / calibration analysis
-(`docs/calibration/Residuals.md`) — join a store's *actual* weather using exactly
+consumers — notably the residuals / diagnosis analysis
+(`docs/diagnosis/Residuals.md`) — join a store's *actual* weather using exactly
 the station the model's proxy was drawn from.
 
 ### Assignment rule
@@ -21,7 +21,7 @@ For each store, pick the **nearest usable weather station** by great-circle
     (`Temperature` != `1`, e.g. precipitation-only AMeDAS rain gauges) are removed
     before matching.** This is an explicit processing rule: a store must never be
     matched to a station that cannot report temperature, otherwise its actual
-    temperature would be missing and no temperature comparison / calibration is
+    temperature would be missing and no temperature comparison / diagnosis is
     possible;
   - **georeferenced** — has `Latitude_Precipitation` / `Longitude_Precipitation`
     in that same file;

@@ -7,7 +7,7 @@ description: >-
   georeferenced, observed station by haversine distance) and writes
   DATA/s03_primary/matched_store_weather_station.tsv. Use when you need each store's
   representative weather station — e.g. to join a store's actual weather history for
-  calibration/residuals analysis.
+  diagnosis/residuals analysis.
 ---
 
 # Match store to weather station

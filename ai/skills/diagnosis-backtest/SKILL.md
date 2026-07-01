@@ -1,12 +1,12 @@
 ---
-name: calibration-backtest
+name: diagnosis-backtest
 description: >-
   Back-test the Demand Forecast Model (DFM) for the Ichimaru demo per
-  docs/calibration/Backtest.md. Re-scores the trained booster
+  docs/diagnosis/Backtest.md. Re-scores the trained booster
   (DATA/s05_model/dfm_lgbm.txt) over the 4 most-recent reference dates of
   DATA/s04_feature/test_dataset.tsv — where actual_sales are known — following the
   dfm_prediction.md inference contract, joins prefecture from store.tsv, and writes
-  DATA/s07_calibration/backtest_sales.tsv with predicted vs actual side by side.
+  DATA/s07_diagnosis/backtest_sales.tsv with predicted vs actual side by side.
   Use when asked to back-test, calibrate, or compare predicted vs actual sales on
   the recent test period.
 ---
@@ -15,9 +15,9 @@ description: >-
 
 Re-applies the trained DFM to the recent test period (where the true actuals are
 known) and emits predicted vs actual side by side, following
-[docs/calibration/Backtest.md](../../../docs/calibration/Backtest.md). This is the
-prediction source for the residuals / calibration analysis
-([docs/calibration/Residuals.md](../../../docs/calibration/Residuals.md)).
+[docs/diagnosis/Backtest.md](../../../docs/diagnosis/Backtest.md). This is the
+prediction source for the residuals / diagnosis analysis
+([docs/diagnosis/Residuals.md](../../../docs/diagnosis/Residuals.md)).
 
 It scores the model exactly like the serve-time prediction step — read the
 **Inference contract** in
@@ -25,7 +25,7 @@ It scores the model exactly like the serve-time prediction step — read the
 
 ## What it produces
 
-One UTF-8, tab-separated file with a header row in `DATA/s07_calibration/`
+One UTF-8, tab-separated file with a header row in `DATA/s07_diagnosis/`
 (created if missing):
 
 - `backtest_sales.tsv` — columns `prefecture`, `store_name`, `reference_date`,
@@ -58,10 +58,10 @@ From the repo root, with the project `.venv` active:
 ```bash
 source .venv/bin/activate
 pip install -r requirements.txt   # lightgbm + pandas (already used upstream)
-python ai/skills/calibration-backtest/scripts/backtest_sales.py
+python ai/skills/diagnosis-backtest/scripts/backtest_sales.py
 ```
 
-Option: `--repo-root <path>`. `make calibration` runs this skill, then residuals.
+Option: `--repo-root <path>`. `make diagnosis` runs this skill, then residuals.
 
 ## How it works
 

@@ -5,7 +5,7 @@
 PYTHON := $(shell [ -x .venv/bin/python ] && echo .venv/bin/python || echo python3)
 
 .DEFAULT_GOAL := help
-.PHONY: help base-data synthetics features modeling prediction calibration
+.PHONY: help base-data synthetics features modeling prediction diagnosis
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -38,7 +38,8 @@ prediction: ## Score the trained model on the prediction set, then SHAP-explain 
 	$(PYTHON) ai/skills/dfm-predict-sales/scripts/predict_sales.py
 	$(PYTHON) ai/skills/dfm-explain-predictions/scripts/explain_predictions.py
 
-calibration: ## Back-test the model then compute residuals (feature vs actual weather) -> DATA/s07_calibration/
+diagnosis: ## Back-test, compute residuals (feature vs actual weather), then diagnose error slopes -> DATA/s07_diagnosis/
 	# Requires the `modeling` outputs, plus the matched-weather file from `synthetics` — run `make synthetics modeling` first.
-	$(PYTHON) ai/skills/calibration-backtest/scripts/backtest_sales.py
-	$(PYTHON) ai/skills/calibration-calculate-residuals/scripts/calculate_residuals.py
+	$(PYTHON) ai/skills/diagnosis-backtest/scripts/backtest_sales.py
+	$(PYTHON) ai/skills/diagnosis-calculate-residuals/scripts/calculate_residuals.py
+	$(PYTHON) ai/skills/diagnosis-calculate-slopes/scripts/calculate_slopes.py

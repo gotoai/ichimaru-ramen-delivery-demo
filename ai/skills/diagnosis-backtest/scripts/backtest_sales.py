@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Back-test the Demand Forecast Model (DFM) over the recent test period.
 
-Implements docs/calibration/Backtest.md. Re-scores the trained model on the most
+Implements docs/diagnosis/Backtest.md. Re-scores the trained model on the most
 recent slice of the test set — where the true actual_sales are known — and emits
-predicted vs actual side by side for calibration analysis:
+predicted vs actual side by side for diagnosis analysis:
 
   1. Read DATA/s04_feature/test_dataset.tsv and keep only the 4 most-recent
      distinct reference_date values (the back-test window).
@@ -15,7 +15,7 @@ predicted vs actual side by side for calibration analysis:
   3. Load DATA/s05_model/dfm_lgbm.txt as a LightGBM Booster and predict.
   4. Join store_name -> prefecture from DATA/s03_primary/store.tsv; carry the
      original actual_sales through unchanged.
-  5. Write DATA/s07_calibration/backtest_sales.tsv (UTF-8 TSV, header row):
+  5. Write DATA/s07_diagnosis/backtest_sales.tsv (UTF-8 TSV, header row):
      prefecture, store_name, reference_date, target_date, actual_sales,
      predicted_sales (raw float, no rounding/clamping).
 """
@@ -40,9 +40,9 @@ BACKTEST_WEEKS = 4
 
 def find_repo_root(start: Path) -> Path:
     for p in [start, *start.parents]:
-        if (p / "docs" / "calibration" / "Backtest.md").exists():
+        if (p / "docs" / "diagnosis" / "Backtest.md").exists():
             return p
-    raise SystemExit("Could not locate repo root (docs/calibration/Backtest.md not found).")
+    raise SystemExit("Could not locate repo root (docs/diagnosis/Backtest.md not found).")
 
 
 def require(path: Path, hint: str) -> Path:
@@ -61,7 +61,7 @@ def main() -> int:
     model_file = repo / "DATA" / "s05_model" / "dfm_lgbm.txt"
     params_file = repo / "DATA" / "s05_model" / "model_parameters.json"
     store_tsv = repo / "DATA" / "s03_primary" / "store.tsv"
-    out_dir = repo / "DATA" / "s07_calibration"
+    out_dir = repo / "DATA" / "s07_diagnosis"
 
     require(test_tsv, "run the dfm-create-features skill first.")
     require(model_file, "run the dfm-build-model skill first.")
