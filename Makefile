@@ -5,7 +5,7 @@
 PYTHON := $(shell [ -x .venv/bin/python ] && echo .venv/bin/python || echo python3)
 
 .DEFAULT_GOAL := help
-.PHONY: help base-data synthetics features modeling prediction diagnosis
+.PHONY: help base-data synthetics features modeling prediction diagnosis calibration
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -43,3 +43,7 @@ diagnosis: ## Back-test, compute residuals (feature vs actual weather), then dia
 	$(PYTHON) ai/skills/diagnosis-backtest/scripts/backtest_sales.py
 	$(PYTHON) ai/skills/diagnosis-calculate-residuals/scripts/calculate_residuals.py
 	$(PYTHON) ai/skills/diagnosis-calculate-slopes/scripts/calculate_slopes.py
+
+calibration: ## Fetch the live JMA weather forecast (today+1/+2/+3) -> DATA/s08_calibration/
+	# Live data from the JMA forecast API; result depends on run time (JMA reissues ~05/11/17 JST).
+	$(PYTHON) ai/skills/fetch-weather-forecast/scripts/fetch_weather_forecast.py
