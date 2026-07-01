@@ -1,0 +1,7 @@
+.venv/
+.env
+.hf_cache
+outputs
+__pycache__/
+*.pyc
+events.json
