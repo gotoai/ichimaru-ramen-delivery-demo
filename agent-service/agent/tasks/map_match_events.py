@@ -1,13 +1,13 @@
 """Associate web-found events with the stores they are near.
 
 A **deterministic** spatial step (not an LLM task), the analogue of the synthetic
-event influence in `docs/synthetics/Sales.md`: read every store from
+event influence in `docs/pipeline/synthetics/Sales.md`: read every store from
 `DATA/s03_primary/store.tsv`, and for each geocoded event (from `geocode-locations`) keep the
 (store, event) pairs whose great-circle distance is within 200 m — the same
 `EVENT_RADIUS_M` the sales model uses.
 
-The map-distance algorithm is the haversine defined in `docs/synthetics/Sales.md`
-§"Map distance algorithm"; this mirrors `ai/skills/synthesize-sales` (same
+The map-distance algorithm is the haversine defined in `docs/pipeline/synthetics/Sales.md`
+§"Map distance algorithm"; this mirrors `pipeline/skills/synthesize-sales` (same
 `EARTH_RADIUS_M` and `2*atan2` form) so agent-side matching agrees with the pipeline.
 Stdlib only.
 """
@@ -20,7 +20,7 @@ from pathlib import Path
 
 PROMPT_VERSION = "map_match_events/v1"  # named for parity with the tasks; no prompt here
 
-# Per docs/synthetics/Sales.md: mean Earth radius, and the 200 m event influence radius.
+# Per docs/pipeline/synthetics/Sales.md: mean Earth radius, and the 200 m event influence radius.
 EARTH_RADIUS_M = 6_371_000.0
 EVENT_RADIUS_M = 200.0
 
@@ -28,7 +28,7 @@ JST = dt.timezone(dt.timedelta(hours=9))  # event dates/"tomorrow" are reckoned 
 
 
 def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Great-circle distance in metres (docs/synthetics/Sales.md §Map distance)."""
+    """Great-circle distance in metres (docs/pipeline/synthetics/Sales.md §Map distance)."""
     p1, p2 = math.radians(lat1), math.radians(lat2)
     dphi = math.radians(lat2 - lat1)
     dlmb = math.radians(lon2 - lon1)
