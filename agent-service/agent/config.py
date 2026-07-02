@@ -47,5 +47,16 @@ GEN_TOP_P = _float("GEN_TOP_P", 0.95)
 # Web-API bearer key (used later, not by the CLI/spike).
 AGENT_API_KEY = os.environ.get("AGENT_API_KEY", "")
 
+# Google Geocoding API (geocode task): resolve event venue/location -> coordinates.
+GOOGLE_GEOCODING_API_KEY = os.environ.get("GOOGLE_GEOCODING_API_KEY", "")
+GEOCODE_LANGUAGE = os.environ.get("GEOCODE_LANGUAGE", "ja")  # bias result names/language
+GEOCODE_REGION = os.environ.get("GEOCODE_REGION", "jp")      # ccTLD region bias
+
+# agent-service/ dir (config.py -> parents[1]); default home for local caches.
+AGENT_SERVICE_DIR = Path(__file__).resolve().parents[1]
+GEOCODE_CACHE = os.environ.get(
+    "GEOCODE_CACHE", str(AGENT_SERVICE_DIR / ".cache" / "geocode_cache.json")
+)
+
 # Repo root (agent-service/agent/config.py -> parents[2]), for reading DATA/*.
 REPO_ROOT = Path(__file__).resolve().parents[2]

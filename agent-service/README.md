@@ -3,9 +3,11 @@
 Gemma 4 E4B agent for the Ichimaru demo. It consumes the pipeline's outputs
 (`DATA/…`, notably `DATA/s08_search/searched_events.tsv`) and runs small LLM tasks:
 
-1. **extract** — search text → structured events (name, dates, location, type)
-2. **attendance** — event → estimated crowd size (range + confidence)
-3. **present** — structured data (TSV/JSON) → a natural-language message
+1. **extract-events** — search text → structured events (name, dates, location, type)
+2. **geocode-locations** — event venue/location → coordinates (Google Geocoding; not an LLM step)
+3. **map-match-events** — associate events with stores within 200 m (haversine; not an LLM step)
+4. **estimate-attendance** — event → estimated crowd size (range + confidence)
+5. **present-messages** — structured data (TSV/JSON) → a natural-language message
 
 This directory is **self-contained** and has its **own venv and dependencies**
 (torch/transformers/bitsandbytes) — kept separate from the CPU-installable data
@@ -35,13 +37,19 @@ python tests/smoke_test.py             # model loads + one reply + peak VRAM (~5
 
 ```bash
 # 1) extract events for one location from the search output
-python -m agent.cli extract --location 東京都世田谷区 --limit-items 8 > events.json
+python -m agent.cli extract-events --location 東京都世田谷区 --limit-items 8 > events.json
 
-# 2) estimate attendance for those events
-python -m agent.cli attendance --input events.json
+# 2) add coordinates to each event (needs GOOGLE_GEOCODING_API_KEY in .env)
+python -m agent.cli geocode-locations --input events.json > events_geo.json
 
-# 3) render any structured data as prose
-python -m agent.cli present --input events.json --style bullet
+# 3) associate events with stores within 200 m (reads DATA/s03_primary/store.tsv)
+python -m agent.cli map-match-events --input events_geo.json
+
+# 4) estimate attendance for those events
+python -m agent.cli estimate-attendance --input events_geo.json
+
+# 5) render any structured data as prose
+python -m agent.cli present-messages --input events.json --style bullet
 ```
 
 ## Layout
@@ -54,9 +62,11 @@ agent-service/
     config.py             # loads .env BEFORE torch; model + generation settings
     llm.py                # Gemma 4 E4B 4-bit client (load once; generate/chat)
     tasks/
-      extract.py          # search text -> structured events
-      attendance.py       # events -> crowd-size estimates
-      present.py          # structured data -> natural-language message
+      extract_events.py   # search text -> structured events
+      geocode_locations.py # event venue/location -> coordinates (Google Geocoding)
+      map_match_events.py # events -> stores within 200m (haversine, per Sales.md)
+      estimate_attendance.py # events -> crowd-size estimates
+      present_messages.py # structured data -> natural-language message
       _jsonio.py          # tolerant JSON extraction from model output
     cli.py                # exercise the tasks (python -m agent.cli ...)
   tests/smoke_test.py     # model load + one reply + VRAM

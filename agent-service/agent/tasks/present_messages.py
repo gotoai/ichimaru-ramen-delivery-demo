@@ -5,7 +5,7 @@ message must not invent numbers/facts that are absent from the input.
 """
 from __future__ import annotations
 
-PROMPT_VERSION = "present/v1"
+PROMPT_VERSION = "present-messages/v1"
 
 _SYSTEM = (
     "あなたはデータを分かりやすい文章にまとめるアシスタントです。"

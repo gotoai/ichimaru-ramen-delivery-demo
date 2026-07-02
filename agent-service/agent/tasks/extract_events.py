@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from ._jsonio import parse_json_array
 
-PROMPT_VERSION = "extract/v1"
+PROMPT_VERSION = "extract-events/v1"
 
 EVENT_TYPES = ["concert", "festival", "fireworks", "market", "sports", "exhibition", "other"]
 

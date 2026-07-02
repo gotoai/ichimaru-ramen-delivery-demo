@@ -101,12 +101,14 @@ VRAM figure around 5–7 GB. Watch memory live in another terminal with `watch -
 
 ```bash
 mkdir -p .tmp
-python -m agent.cli extract --location 東京都世田谷区 --limit-items 8 > .tmp/events.json
-python -m agent.cli attendance --input .tmp/events.json
-python -m agent.cli present --input .tmp/events.json --style bullet
+python -m agent.cli extract-events --location 東京都世田谷区 --limit-items 8 > .tmp/events.json
+python -m agent.cli geocode-locations --input .tmp/events.json > .tmp/events_geo.json
+python -m agent.cli map-match-events --input .tmp/events_geo.json
+python -m agent.cli estimate-attendance --input .tmp/events_geo.json
+python -m agent.cli present-messages --input .tmp/events.json --style bullet
 ```
 
-`extract` reads the pipeline's `DATA/s08_search/searched_events.tsv` by default (run the
+`extract-events` reads the pipeline's `DATA/s08_search/searched_events.tsv` by default (run the
 `search-events` skill first).
 
 ---
@@ -116,8 +118,8 @@ python -m agent.cli present --input .tmp/events.json --style bullet
 - `KeyError: 'gemma4'` / unknown model type → transformers too old; `pip install -U "transformers>=5.10.1"`.
 - `torch.cuda.is_available()` is `False` → driver/wheel CUDA mismatch (see step 2's `--index-url`).
 - `CUDA out of memory` during generation (model loaded, OOM at the forward pass) → the
-  prompt is too long. `extract` truncates each result's `content` to
-  `MAX_CONTENT_CHARS` (in `agent/tasks/extract.py`); if it still OOMs, lower that or feed
+  prompt is too long. `extract-events` truncates each result's `content` to
+  `MAX_CONTENT_CHARS` (in `agent/tasks/extract_events.py`); if it still OOMs, lower that or feed
   fewer items with `--limit-items 4`. `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`
   is set automatically to reduce fragmentation. Also confirm the 4-bit
   `BitsAndBytesConfig` is active (it is, in `agent/llm.py`) and close other GPU apps

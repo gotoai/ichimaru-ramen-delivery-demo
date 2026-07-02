@@ -1,6 +1,6 @@
 """Task 2 — estimate how many people attend each event.
 
-Input: structured events (extract's output) + optional context. Output: a crowd-size
+Input: structured events (extract-events's output) + optional context. Output: a crowd-size
 estimate as a RANGE (low/point/high) with confidence and rationale — crowd size is
 genuinely uncertain, so avoid false precision.
 """
@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from ._jsonio import parse_json_array
 
-PROMPT_VERSION = "attendance/v1"
+PROMPT_VERSION = "estimate-attendance/v1"
 
 _SYSTEM = (
     "あなたは日本のイベントの来場者数を推定するアナリストです。"
