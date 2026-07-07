@@ -1,0 +1,26 @@
+<table class="forecast-table">
+  <thead>
+    <tr>
+      <th>日付</th><th>曜日</th><th>予測</th><th>天候補正後</th>
+      <th>イベント増</th><th>補正後売上</th><th>発注目安</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in rows %}
+    <tr class="fc-row {% if r.event_count > 0 %}has-event{% endif %}"
+        data-target="{{ r.target_date }}"
+        hx-get="/ui/store/{{ store_name }}/breakdown?target={{ r.target_date }}"
+        hx-target="#breakdown" hx-swap="innerHTML">
+      <td>{{ r.target_date[5:] }}</td>
+      <td>{{ r.weekday }}</td>
+      <td class="num">{{ r.predicted_sales }}</td>
+      <td class="num">{{ r.weather_calibrated_sales }}</td>
+      <td class="num">{% if r.event_added_demand %}+{{ r.event_added_demand }}{% else %}–{% endif %}</td>
+      <td class="num strong">{{ r.calibrated_sales }}</td>
+      <td class="num order">{{ r.suggested_order }}</td>
+      <td class="chev">›</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p class="hint">行をクリックすると、その日の内訳（予測→天候→イベント）と要因が表示されます。</p>

@@ -1,0 +1,189 @@
+
+time_horizon:
+  weather_history:
+    end_date: "the date of the day that is 2 days before the current system JST date"
+    start_date: "January 1st of the year that is 3 years before the end_date year"
+
+  competitor_history:
+    end_date: "the date of the day that is 2 days before the current system JST date"
+    start_date: "January 1st of the year that is 5 years before the end_date year"
+
+  home_building_history:
+    end_date: "the date of the day that is 2 days before the current system JST date"
+    start_date: "January 1st of the year that is 5 years before the end_date year"
+
+  sales_history:
+    end_date: "the date of the day that is 2 days before the current system JST date"
+    start_date: "January 1st of the year that is 2 years before the end_date year"
+    
+  demand_forecast_training:
+    end_date: "the date of the last day of the month that is 2 months before the month of current system JST date"
+    start_date: "the date of first day of sales_history"
+
+  demand_forcast_prediction:
+    end_date: "the date of the day that is 7 days after the current system JST date"
+    start_date: "the date of the day that is 1 day after the current system JST date"
+
+  delivery_planning:
+    end_date: "the date of the day that is 7 days after the current system JST date"
+    start_date: "the date of the day that is 1 day after the current system JST date"
+
+
+synthetics:
+  random_seed: 629
+
+  stores:
+    weekday_sales_baseline: [80, 300]
+    weekend_sales_baseline: [50, 350]    
+
+  competitors:
+    numbers:
+      埼玉県: 300
+      東京都: 600
+      千葉県: 300
+      神奈川県: 400
+
+    weekday_sales_baseline: [30, 300]
+    weekend_sales_baseline: [30, 300]
+    business_duration: [90, 1825]
+
+  home_buildings:
+    numbers:
+      埼玉県: 150
+      東京都: 300
+      千葉県: 150
+      神奈川県: 200
+
+    unit_range: [20, 300]
+
+  events:
+    numbers:
+      埼玉県: 300
+      東京都: 1000
+      千葉県: 300
+      神奈川県: 500
+
+    people_range: [200, 1000]
+
+  sales:
+    baseline:
+      scale_sampling:
+        kernel: beta
+        normalize: yes
+        parameters:
+          alpha: 30
+          beta: 10
+
+      noise_sampling:
+        kernel: gaussian
+        parameters:
+          mu: 1.0
+          sigma: 0.05
+          bounds: [0.5, 1.5]
+
+    home_building:
+      scale_sampling:
+        kernel: beta
+        normalize: yes
+        parameters:
+          alpha: 5
+          beta: 5    
+      
+      noise_sampling:
+        kernel: gaussian
+        parameters:
+          mu: 1.0
+          sigma: 0.05
+          bounds: [0.5, 1.5]
+
+    competitor:
+      scale_sampling:
+        kernel: beta
+        normalize: yes
+        parameters:
+          alpha: 30
+          beta: 10
+
+      noise_sampling:
+        kernel: gaussian
+        parameters:
+          mu: 1.0
+          sigma: 0.05
+          bounds: [0.5, 1.5]
+
+    event:
+      scale_sampling:
+        kernel: beta
+        normalize: yes
+        parameters:
+          alpha: 20
+          beta: 20    
+      
+      noise_sampling:
+        kernel: gaussian
+        parameters:
+          mu: 1.0
+          sigma: 0.05
+          bounds: [0.5, 1.5]
+
+    weather_temperature:
+      scale_sampling:
+        kernel: beta
+        normalize: yes
+        parameters:
+          alpha: 30
+          beta: 30    
+      
+      noise_sampling:
+        kernel: gaussian
+        parameters:
+          mu: 1.0
+          sigma: 0.05
+          bounds: [0.5, 1.5]
+
+    weather_rain:
+      scale_sampling:
+        kernel: beta
+        normalize: yes
+        parameters:
+          alpha: 50
+          beta: 50    
+      
+      noise_sampling:
+        kernel: gaussian
+        parameters:
+          mu: 1.0
+          sigma: 0.05
+          bounds: [0.5, 1.5]    
+
+
+modeling:
+  training:
+    random_seed: 630
+
+
+calibration:
+  events:
+    # P(an attendee buys a bowl), by event_type. "other" is the fallback for any
+    # event_type not listed (concert, market, exhibition, …).
+    baseline_demand_probability:
+      fireworks: 0.02
+      花火: 0.02
+      はなび: 0.02
+      festival: 0.02
+      まつり: 0.02
+      祭り: 0.02
+      sports: 0.01
+      運動会: 0.01
+      大会: 0.01
+      other: 0.01
+    # Distance-decay factor, by store↔event distance (metres). Each key is a band's
+    # UPPER bound; "other" applies beyond the last band (only reachable if the
+    # map-match radius is raised above 500 m).
+    distance_loss:
+      100: 0.8     # 0   < distance_m ≤ 100
+      200: 0.5     # 100 < distance_m ≤ 200
+      500: 0.2     # 200 < distance_m ≤ 500
+      other: 0.1
+    # Cap, in bowls, on the estimated extra demand per (store, event) pair.
+    max_added_demand: 20

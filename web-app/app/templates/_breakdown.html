@@ -1,0 +1,80 @@
+{% set scale = [bd.predicted_sales, bd.weather_calibrated_sales, bd.calibrated_sales]|max %}
+{% set ns = namespace(maxabs=0.001) %}
+{% for s in bd.top_shap %}{% if s.shap_value|abs > ns.maxabs %}{% set ns.maxabs = s.shap_value|abs %}{% endif %}{% endfor %}
+
+<div class="bd-head">
+  <strong>{{ bd.target_date }}（{{ bd.weekday }}）</strong> の内訳
+  <button type="button" class="explain-btn"
+          data-q="{{ bd.target_date }} の補正後売上 {{ bd.calibrated_sales }} 杯になった理由を、予測・天候・イベントの内訳で説明して">
+    この日をAIに説明させる
+  </button>
+  {% if bd.self_check_ok %}<span class="ok">✓ 検算OK</span>{% endif %}
+</div>
+
+<div class="waterfall">
+  <div class="wf-row">
+    <span class="wf-label">{{ labels.predicted_sales }}</span>
+    <span class="wf-bar predicted" style="width: {{ (bd.predicted_sales / scale * 100)|round(1) }}%"></span>
+    <span class="wf-val">{{ bd.predicted_sales }}</span>
+  </div>
+  <div class="wf-row">
+    <span class="wf-label">{{ labels.weather_calibrated_sales }}</span>
+    <span class="wf-bar weather" style="width: {{ (bd.weather_calibrated_sales / scale * 100)|round(1) }}%"></span>
+    <span class="wf-val">{{ bd.weather_calibrated_sales }}
+      {% set wdelta = (bd.weather_calibrated_sales - bd.predicted_sales)|round(1) %}
+      <em class="{{ 'up' if wdelta >= 0 else 'down' }}">({{ '+' if wdelta >= 0 else '' }}{{ wdelta }})</em>
+    </span>
+  </div>
+  <div class="wf-row">
+    <span class="wf-label">{{ labels.calibrated_sales }}</span>
+    <span class="wf-bar calibrated" style="width: {{ (bd.calibrated_sales / scale * 100)|round(1) }}%"></span>
+    <span class="wf-val strong">{{ bd.calibrated_sales }}
+      {% if bd.event_added_demand %}<em class="up">(+{{ bd.event_added_demand }} イベント)</em>{% endif %}
+    </span>
+  </div>
+</div>
+
+<div class="bd-cols">
+  <div class="bd-col">
+    <h4>天候補正の要因</h4>
+    <ul class="factors">
+      {% for f in bd.weather.factors %}
+      <li>
+        <span class="ftype">{{ f.type }}</span>
+        {% if f.slope is not none %}× {{ f.slope }}{% endif %}
+        {% if f.band %}<span class="band">{{ f.band }}</span>{% endif %}
+        <span class="reason">{{ f.reason }}</span>
+      </li>
+      {% else %}
+      <li class="muted">補正要因なし</li>
+      {% endfor %}
+    </ul>
+    {% if bd.events %}
+    <h4>近接イベント</h4>
+    <ul class="factors">
+      {% for e in bd.events %}
+      <li><strong>{{ e.event_name }}</strong>
+        （{{ e.distance_m }}m, 需要 +{{ e.estimated_demand }}）</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+
+  <div class="bd-col">
+    <h4>予測の主な寄与（SHAP）</h4>
+    <ul class="shap">
+      {% for s in bd.top_shap %}
+      <li>
+        <span class="sfeat" title="{{ s.feature }}">{{ s.feature }}</span>
+        <span class="sbar-wrap">
+          <span class="sbar {{ 'pos' if s.shap_value >= 0 else 'neg' }}"
+                style="width: {{ (s.shap_value|abs / ns.maxabs * 100)|round(1) }}%"></span>
+        </span>
+        <span class="sval {{ 'pos' if s.shap_value >= 0 else 'neg' }}">
+          {{ '+' if s.shap_value >= 0 else '' }}{{ s.shap_value }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    <p class="muted small">SHAP は予測モデルの各特徴量の寄与（杯）。合計＋基準値＝予測売上。</p>
+  </div>
+</div>

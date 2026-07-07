@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="{{ ui_language }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>イチマル　AI発注ダッシュボード</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="stylesheet" href="/static/vendor/leaflet.css">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/vendor/htmx.min.js" defer></script>
+  <script src="/static/vendor/leaflet.js" defer></script>
+  <script src="/static/vendor/echarts.min.js" defer></script>
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <h1>イチマル　AI発注ダッシュボード</h1>
+    <div class="controls">
+      <label>店舗
+        <select id="store-select">
+          <option value="">— 地図または一覧から選択 —</option>
+          {% for s in stores %}
+          <option value="{{ s.store_name }}">{{ s.store_name }}（{{ s.mean_calibrated }}杯）</option>
+          {% endfor %}
+        </select>
+      </label>
+      <span class="forecast-note">予測期間: {{ forecast_start }} から7日間</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- LEFT: map island (Leaflet) -->
+    <section class="panel map-panel">
+      <div id="map"></div>
+      <div class="legend">
+        <span class="dot dot-low"></span>少
+        <span class="dot dot-mid"></span>中
+        <span class="dot dot-high"></span>多
+        <span class="ev">★</span>イベント
+      </div>
+    </section>
+
+    <!-- CENTER: chart + forecast table + breakdown -->
+    <section class="panel center-panel">
+      <div id="store-title" class="store-title">店舗を選択してください</div>
+      <div id="chart" class="chart"></div>
+      <div id="forecast" class="forecast">
+        <p class="hint">店舗を選ぶと、翌日から7日間の補正後売上が表示されます。</p>
+      </div>
+      <div id="breakdown" class="breakdown"></div>
+    </section>
+
+    <!-- RIGHT: chat island (EventSource streaming to /ui/chat/stream) -->
+    <section class="panel chat-panel">
+      <div class="chat-head">AIアナリスト</div>
+      <div id="chat-log" class="chat-log">
+        <div class="msg assistant">
+          こんにちは。予測や補正（天候・イベント）の仕組み、各日の内訳について質問できます。
+          店舗を選ぶと、その店舗のデータに基づいて回答します。
+        </div>
+      </div>
+      <div class="chat-quick" id="chat-quick">
+        <button type="button" data-q="この店舗の今週の売上傾向を説明して">一週間傾向の説明</button>
+        <button type="button" data-action="shap">予測数量の分解</button>
+        <button type="button" data-q="補正（天候・イベント）の仕組みを教えて">補正の仕組み</button>
+      </div>
+      <form id="chat-form" class="chat-form" autocomplete="off">
+        <input id="chat-input" type="text" placeholder="質問を入力…" required>
+        <button type="submit">送信</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

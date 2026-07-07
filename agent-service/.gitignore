@@ -1,0 +1,10 @@
+.venv/
+.env
+.hf_cache
+outputs
+__pycache__/
+*.pyc
+events.json
+
+# vendored DuckDB CLI (binary) for the analytics chatbot sandbox
+.tools/

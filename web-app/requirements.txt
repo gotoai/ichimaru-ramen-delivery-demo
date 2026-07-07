@@ -1,0 +1,17 @@
+# web-app dependencies — ISOLATED from the pipeline and from agent-service.
+# Install into web-app/.venv (CPU-only; no torch, no model). See README.md.
+#
+#   python3.12 -m venv web-app/.venv
+#   source web-app/.venv/bin/activate
+#   pip install -r web-app/requirements.txt
+
+fastapi                  # web framework (pages + JSON API + HTMX fragments + chat proxy)
+uvicorn[standard]        # ASGI server
+jinja2                   # server-rendered HTML pages and HTMX fragments
+python-multipart         # parse HTMX form posts (chat box)
+pandas                   # read/aggregate the calibration TSVs
+httpx                    # proxy chat to agent-service (async, SSE streaming)
+pyshp                    # read the geoshape shapefiles (prefecture outlines)
+shapely                  # dissolve fine ooaza polygons into prefecture outlines
+python-dotenv            # load web-app/.env (DATA_DIR / AGENT_SERVICE_URL / keys)
+pytest                   # data-layer + endpoint smoke tests (make test; no model needed)

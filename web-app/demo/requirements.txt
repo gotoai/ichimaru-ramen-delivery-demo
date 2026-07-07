@@ -1,0 +1,5 @@
+# Demo-video tooling (isolated from the web-app). Install into demo/.venv:
+#   python3.12 -m venv .venv && . .venv/bin/activate
+#   pip install -r requirements.txt && playwright install chromium
+# Also needs ffmpeg + ffprobe on PATH (system package, e.g. `apt install ffmpeg`).
+playwright

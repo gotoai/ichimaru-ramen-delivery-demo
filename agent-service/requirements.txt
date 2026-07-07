@@ -1,0 +1,16 @@
+# agent-service dependencies — ISOLATED from the pipeline's requirements.txt.
+# Install into agent-service/.venv on a CUDA GPU box. See INSTALL.md for the full flow.
+#
+# NOTE: install torch/torchvision FIRST and separately (see INSTALL.md) — the correct
+# CUDA wheel depends on the box's driver, so they are intentionally NOT pinned here.
+
+transformers>=5.10.1     # Gemma 4 needs transformers v5
+accelerate
+bitsandbytes             # 4-bit (nf4) quantization
+pillow                   # multimodal processor dependency
+timm                     # multimodal processor dependency
+python-dotenv            # load agent-service/.env (MODEL_ID / HF_HOME / GOTOAI_AGENT_API_KEY)
+fastapi                  # web API (agent.api) — thin wrapper over the task modules
+uvicorn[standard]        # ASGI server for the web API (run a SINGLE worker: one model/process)
+pytest                   # tests (make test-serve) — API integration test through the real model
+httpx                    # required by FastAPI's TestClient in tests/test_api.py
