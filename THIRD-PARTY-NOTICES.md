@@ -28,7 +28,7 @@ Their original license headers are preserved in the minified files.
 
 | Model | License / Terms | Source |
 |---|---|---|
-| Gemma 4 E4B (`google/gemma-4-E4B-it`) | Gemma Terms of Use | https://ai.google.dev/gemma/terms |
+| Gemma 4 12B (`google/gemma-4-12B-it`) | Gemma Terms of Use | https://ai.google.dev/gemma/terms |
 
 The model weights are **not** included in this repository; `agent-service` downloads them
 from Hugging Face into a local cache. Use of Gemma is subject to Google's Gemma Terms of Use

@@ -1,4 +1,4 @@
-"""Smoke test — does Gemma 4 E4B load and reply through agent.llm?
+"""Smoke test — does Gemma 4 12B load and reply through agent.llm?
 
     cd agent-service && source .venv/bin/activate
     python tests/smoke_test.py

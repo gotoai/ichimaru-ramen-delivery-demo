@@ -1,4 +1,4 @@
-"""Thin internal Gemma 4 E4B client (4-bit), mirroring examples/01_text_chat.py.
+"""Thin internal Gemma 4 12B client (4-bit), mirroring examples/01_text_chat.py.
 
 This is the *internal* LLM layer — task modules and (later) the web API call it; it is
 not itself the public API. Loads the model once (lazily) and exposes a simple
@@ -35,7 +35,7 @@ def text_message(role: str, text: str) -> Message:
 
 
 class GemmaLLM:
-    """Lazily-loaded Gemma 4 E4B in 4-bit (nf4). ~5-6GB VRAM; fits 16GB comfortably."""
+    """Lazily-loaded Gemma 4 12B in 4-bit (nf4). ~5-6GB VRAM; fits 16GB comfortably."""
 
     def __init__(self, model_id: str | None = None):
         self.model_id = model_id or config.MODEL_ID
@@ -169,7 +169,7 @@ class GemmaLLM:
         return self.generate(messages, **kw)
 
     def max_context(self) -> int | None:
-        """Model's max context length (E4B nests it under text_config)."""
+        """Model's max context length (12B nests it under text_config)."""
         self.load()
         cfg = self.model.config
         return getattr(getattr(cfg, "text_config", cfg), "max_position_embeddings", None)

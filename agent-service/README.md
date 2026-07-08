@@ -1,6 +1,6 @@
 # agent-service
 
-Gemma 4 E4B agent for the Ichimaru demo. It consumes the pipeline's outputs
+Gemma 4 12B agent for the Ichimaru demo. It consumes the pipeline's outputs
 (`DATA/…`, notably `DATA/s08_search/searched_events.tsv`) and runs small LLM tasks:
 
 1. **extract-events** — search text → structured events (name, dates, location, type)
@@ -36,7 +36,7 @@ python3 -m venv .venv && source .venv/bin/activate && pip install -U pip
 pip install torch torchvision          # CUDA build — see INSTALL.md if cuda.is_available() is False
 pip install -r requirements.txt
 cp .env.example .env                    # edit HF_HOME (shared cache) / MODEL_ID / GOTOAI_AGENT_API_KEY
-python tests/smoke_test.py             # model loads + one reply + peak VRAM (~5-7GB in 4-bit)
+python tests/smoke_test.py             # model loads + one reply + peak VRAM (~9-11GB in 4-bit)
 ```
 
 ## Run the tasks (spike)
@@ -107,7 +107,7 @@ agent-service/
   .env.example            # MODEL_ID / HF_HOME / MAX_NEW_TOKENS / GOTOAI_AGENT_API_KEY
   agent/
     config.py             # loads .env BEFORE torch; model + generation settings
-    llm.py                # Gemma 4 E4B 4-bit client (load once; generate/chat/generate_tools)
+    llm.py                # Gemma 4 12B 4-bit client (load once; generate/chat/generate_tools)
     analyst.py            # agentic analytics loop (SQL/bash tools over s10_analysis) — torch-free
     tasks/
       extract_events.py   # search text -> structured events

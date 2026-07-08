@@ -38,7 +38,7 @@ def _float(name: str, default: float) -> float:
 # is imported before torch in agent.llm). Harmless if already set by the user.
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
-MODEL_ID = os.environ.get("MODEL_ID", "google/gemma-4-E4B-it")
+MODEL_ID = os.environ.get("MODEL_ID", "google/gemma-4-12B-it")
 HF_HOME = os.environ.get("HF_HOME", "")          # informational; already applied via .env
 MAX_NEW_TOKENS = _int("MAX_NEW_TOKENS", 2048)
 GEN_TEMPERATURE = _float("GEN_TEMPERATURE", 0.7)

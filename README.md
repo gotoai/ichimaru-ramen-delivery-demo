@@ -30,7 +30,7 @@ used. The stores, competitors, homes, events, and sales are all generated from p
         ▼                                                         ▼
 ┌───────────────────────────┐   proxies chat (SSE)   ┌───────────────────────────┐
 │  web-app/    (CPU)         │ ─────────────────────► │  agent-service/  (CUDA GPU)│
-│  area-manager dashboard    │                        │  Gemma 4 E4B host          │
+│  area-manager dashboard    │                        │  Gemma 4 12B host          │
 │  map · chart · forecast    │ ◄───────────────────── │  /v1 tasks + analytics     │
 │  table · per-day breakdown │      answers / prose   │  agent (SQL/bash tools)    │
 └───────────────────────────┘                        └───────────────────────────┘
@@ -47,7 +47,7 @@ agent-service.
 |---|---|---|---|
 | [`pipeline/`](pipeline/) | Predictive ML pipeline: data retrieval, synthesis, demand-forecast modeling, prediction, diagnosis, live search, weather/event calibration, and a DuckDB-ready analytics layer. Driven by `make`. | CPU | `pipeline/.venv` |
 | [`web-app/`](web-app/) | Human-facing **area-manager dashboard** (FastAPI + Jinja2 + HTMX). Shows calibrated sales on a map/chart/table with per-day breakdowns and an AI chat. Reads `DATA/`; proxies chat. | CPU | `web-app/.venv` |
-| [`agent-service/`](agent-service/) | Machine-facing **Gemma 4 E4B** model host (FastAPI). Runs the small LLM tasks (event extraction, attendance estimates, message rendering) and the tool-using **analytics agent** (SQL over `s10_analysis`). | CUDA GPU | `agent-service/.venv` |
+| [`agent-service/`](agent-service/) | Machine-facing **Gemma 4 12B** model host (FastAPI). Runs the per-task LLM calls (event extraction, attendance estimates, message rendering) and the tool-using **analytics agent** (SQL over `s10_analysis`). | CUDA GPU | `agent-service/.venv` |
 
 Each component has its own README with full detail:
 [pipeline](pipeline/README.md) · [web-app](web-app/README.md) · [agent-service](agent-service/README.md).
@@ -57,7 +57,7 @@ Each component has its own README with full detail:
 ### Prerequisites
 
 - **Python 3.12** (3.12.10 used in development).
-- A **CUDA GPU** for `agent-service` only (Gemma 4 E4B loads in ~5–7 GB VRAM in 4-bit).
+- A **CUDA GPU** for `agent-service` only (Gemma 4 12B loads in ~9–11 GB VRAM in 4-bit).
   The pipeline and web-app are CPU-only. The dashboard runs without the agent-service —
   only the AI chat needs it.
 - **API keys** for the live steps (see [Data & model references](#data--model-references)):
@@ -161,7 +161,7 @@ any downloaded artifacts.
 | **気象庁 (JMA — Japan Meteorological Agency)** | Open weather data & forecast API | AMeDAS station master, ~3 years of **daily weather history** (temperature/rain drivers of sales), and the **live weather forecast** used in calibration. |
 | **Tavily Search API** | Live web-search API (key required) | Web-searching near-future local **events** (祭り・花火大会・イベント・コンサート) around each store. |
 | **Google Geocoding API** | Geocoding API (key required) | Turning extracted event venue/location text into **coordinates** for map-matching to stores. |
-| **Gemma 4 E4B** (`google/gemma-4-E4B-it`) | Local instruction-tuned LLM (4-bit, on GPU) | The analytic AI agents: event **extraction**, **attendance** estimation, **message** rendering, and the SQL tool-using **analytics chat**. |
+| **Gemma 4 12B** (`google/gemma-4-12B-it`) | Local instruction-tuned LLM (4-bit, on GPU) | The analytic AI agents: event **extraction**, **attendance** estimation, **message** rendering, and the SQL tool-using **analytics chat**. |
 
 ## Repository layout
 

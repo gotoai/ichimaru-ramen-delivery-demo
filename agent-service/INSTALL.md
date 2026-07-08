@@ -1,6 +1,6 @@
 # agent-service — Local Install (CUDA + PyTorch)
 
-Target box: Ubuntu 24.04, NVIDIA GPU with ~16GB VRAM (Gemma 4 E4B runs 4-bit, ~5-7GB).
+Target box: Ubuntu 24.04, NVIDIA GPU with ~16GB VRAM (Gemma 4 12B runs 4-bit, ~9-11GB).
 This service has its **own venv and dependencies**, separate from the data pipeline.
 
 Follow the steps in order. After each **✅ Check**, confirm the expected output before
@@ -73,8 +73,8 @@ cp .env.example .env
 ```
 
 Then edit `.env`:
-- `MODEL_ID=google/gemma-4-E4B-it`
-- `HF_HOME` — point at a **shared** Hugging Face cache so the ~8GB model isn't
+- `MODEL_ID=google/gemma-4-12B-it`
+- `HF_HOME` — point at a **shared** Hugging Face cache so the ~24GB model isn't
   re-downloaded per venv (e.g. reuse an existing shared `.hf_cache`, or a
   home-level cache). The app loads `.env` **before** importing transformers, so `HF_HOME`
   takes effect for the download.
@@ -94,8 +94,8 @@ prints your model id and cache path.
 python tests/smoke_test.py
 ```
 
-**✅ Check:** after the one-time ~8GB download you see a `MODEL REPLY:` line and a peak
-VRAM figure around 5–7 GB. Watch memory live in another terminal with `watch -n1 nvidia-smi`.
+**✅ Check:** after the one-time ~24GB download you see a `MODEL REPLY:` line and a peak
+VRAM figure around 9–11 GB. Watch memory live in another terminal with `watch -n1 nvidia-smi`.
 
 ---
 
@@ -125,5 +125,6 @@ python -m agent.cli present-messages --input .tmp/events.json --style bullet
   fewer items with `--limit-items 4`. `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`
   is set automatically to reduce fragmentation. Also confirm the 4-bit
   `BitsAndBytesConfig` is active (it is, in `agent/llm.py`) and close other GPU apps
-  (`nvidia-smi`); or use the QAT variant `google/gemma-4-E4B-it-qat-mobile-transformers`.
+  (`nvidia-smi`); or fall back to a smaller Gemma variant (e.g. `google/gemma-4-E4B-it`)
+  on lower-VRAM boxes.
 - Slow / repeated downloads → make sure `HF_HOME` in `.env` points at your shared cache.

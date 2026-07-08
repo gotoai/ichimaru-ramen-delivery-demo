@@ -1,4 +1,4 @@
-"""agent-service — Gemma 4 E4B agent for the Ichimaru demo.
+"""agent-service — Gemma 4 12B agent for the Ichimaru demo.
 
 Public surface (import lazily; `llm`/`tasks` pull in torch/transformers on use):
 
